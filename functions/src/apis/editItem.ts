@@ -1,30 +1,43 @@
+import {
+  checkIf,
+  interfaceOf,
+  is,
+  isCallTrue,
+  sanitizeJson,
+} from "sanitize-json";
 import { checkAuth, checkPermission } from "../middlewere";
-import { checkItem } from "../utility/check";
 import { fsValue, paths, runTransaction } from "../utility/firestore";
 import { IncorrectReqErr } from "../utility/res";
 import { randomStr } from "../utility/utils";
 
 const MaxLogCount = 100;
 
-function checkReq(data: req.EditItem): res<req.EditItem> {
-  const err = { err: true as true, val: IncorrectReqErr };
-  if (
-    [data.id, data.type].checkTypeIsNot("string") ||
-    data.type.isNotIn(["create", "remove", "update"])
-  )
-    return err;
-  const item = checkItem(data.item);
-  if (!item) return err;
-  return { err: false, val: { id: data.id, type: data.type, item: item } };
-}
-
+const validNumS = checkIf<number>(is.number, is.truly);
+const itemS = interfaceOf({
+  cgst: validNumS,
+  code: is.string,
+  collectionName: is.string,
+  name: is.string,
+  rate1: validNumS,
+  rate2: validNumS,
+  sgst: validNumS,
+});
+const typeS = checkIf(
+  is.string,
+  isCallTrue((x) => x == "create" || x == "remove" || x == "update")
+);
+const reqS = interfaceOf({
+  type: typeS,
+  item: itemS,
+  id: is.string,
+});
 export default async function EditItem(
   data: req.EditItem,
   context: req.context
 ): Res<req.EditItem> {
-  const p = checkReq(data);
-  if (p.err) return p;
-  data = p.val;
+  const cleanData = sanitizeJson(reqS, data);
+  if (cleanData.err) return { err: true, val: IncorrectReqErr };
+  data = cleanData.val;
 
   const user = await checkAuth(context);
   if (user.err) return user;

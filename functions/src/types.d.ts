@@ -28,24 +28,13 @@ declare global {
       onrejected?: err | null
     ): Res<TResult1>;
   }
-  interface Array<T> {
-    mapCheck(checker: (val: T) => T | void): T[] | void;
-    checkTypeIs(type: type): boolean;
-    checkTypeIsNot(type: type): boolean;
-    areRespectively(list: type[]): boolean;
-    areRespectivelyNot(list: type[]): boolean;
-  }
-  interface String {
-    isIn(list: string[]): boolean;
-    isNotIn(list: string[]): boolean;
-  }
   interface err {
     code: string;
     message: string;
   }
   type applyClaim =
     | undefined
-    | "admin"
+    | { role: "admin" }
     | { role: "manager"; stockId: string }
     | { role: "accountent"; stockId: string; cashCounter: string };
   interface item {

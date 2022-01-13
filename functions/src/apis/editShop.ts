@@ -3,40 +3,38 @@ import { paths, runTransaction } from "../utility/firestore";
 import { InitCashCounter, InitStock } from "../utility/docSetUp";
 import { IncorrectReqErr } from "../utility/res";
 import { randomStr } from "../utility/utils";
+import {
+  combine,
+  interfaceOf,
+  is,
+  sanitizeJson,
+  switchOn,
+} from "sanitize-json";
 
-function reqIsNotOk(data: req.EditShop): boolean {
-  try {
-    if (
-      [data.name, data.type].checkTypeIsNot("string") ||
-      data.type.isNotIn([
-        "createStock",
-        "editStock",
-        "createCashCounter",
-        "editCashCounter",
-        "editName",
-      ])
-    )
-      return true;
-    if (data.type === "editName") {
-      if (typeof data.uid !== "string") return true;
-    } else if (
-      (data.type !== "createStock" && typeof data.stockID !== "string") ||
-      (data.type === "editCashCounter" &&
-        typeof data.cashCounterId !== "string")
-    )
-      return true;
+const commonS = interfaceOf({ name: is.string, type: is.string });
+const editS = combine(commonS, interfaceOf({ stockID: is.string }));
+const createC = combine(commonS, interfaceOf({ stockID: is.string }));
+const editC = combine(
+  commonS,
+  interfaceOf({ stockID: is.string, cashCounterId: is.string })
+);
+const editN = combine(commonS, interfaceOf({ uid: is.string }));
 
-    return false;
-  } catch {
-    return true;
-  }
-}
-
+const reqS = switchOn(
+  (x: any) => x.type,
+  { when: "createStock", then: commonS },
+  { when: "editStock", then: editS },
+  { when: "createCashCounter", then: createC },
+  { when: "editCashCounter", then: editC },
+  { when: "editName", then: editN }
+);
 export default async function EditShop(
   data: req.EditShop,
   context: req.context
 ): Res<string> {
-  if (reqIsNotOk(data)) return { err: true, val: IncorrectReqErr };
+  const cleanData = sanitizeJson(reqS, data);
+  if (cleanData.err) return { err: true, val: IncorrectReqErr };
+  data = cleanData.val;
 
   const user = await checkAuth(context);
   if (user.err) return user;

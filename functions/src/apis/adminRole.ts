@@ -26,7 +26,7 @@ export default async function AdminRole(
     const uid = user.val.uid;
 
     if (val === "make") {
-      claim = "admin";
+      claim = { role: "admin" };
       obj = {
         status: "👍👍👍",
         message: "This user was made admin successfully",

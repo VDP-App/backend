@@ -1,31 +1,35 @@
+import { interfaceOf, is, checkIf, listOf, sanitizeJson } from "sanitize-json";
 import { checkAuth, checkPermission } from "../middlewere";
-import { checkBill } from "../utility/check";
 import { fsValue, paths, setDoc } from "../utility/firestore";
 import { paths as rtPaths, runTransaction } from "../utility/realtime";
 import { IncorrectReqErr, InternalErr } from "../utility/res";
 
-function checkReq(data: req.Billing): res<req.Billing> {
-  const err = { err: true as true, val: IncorrectReqErr };
-  if ([data.stockID, data.cashCounterID].checkTypeIsNot("string")) return err;
-  const bill = checkBill(data.bill);
-  if (!bill) return err;
-  return {
-    err: false,
-    val: {
-      stockID: data.stockID,
-      cashCounterID: data.cashCounterID,
-      bill: bill,
-    },
-  };
-}
+const validNumS = checkIf<number>(is.number, is.truly);
+const orderS = interfaceOf({
+  iId: is.string,
+  q: validNumS,
+  a: validNumS,
+  r: validNumS,
+});
+const billS = interfaceOf({
+  isWS: is.boolean,
+  imC: is.boolean,
+  mG: validNumS,
+  o: listOf(orderS),
+});
+const reqS = interfaceOf({
+  bill: billS,
+  stockID: is.string,
+  cashCounterID: is.string,
+});
 
 export default async function Billing(
   data: req.Billing,
   context: req.context
 ): Res<number> {
-  const p = checkReq(data);
-  if (p.err) return p;
-  data = p.val;
+  const cleanData = sanitizeJson(reqS, data);
+  if (cleanData.err) return { err: true, val: IncorrectReqErr };
+  data = cleanData.val;
 
   const user = await checkAuth(context);
   if (user.err) return user;

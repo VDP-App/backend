@@ -1,23 +1,21 @@
+import { applyOr, interfaceOf, is, sanitizeJson } from "sanitize-json";
 import { checkAuth, checkPermission } from "../middlewere";
-import { isSameAs } from "../utility/check";
 import { IncorrectReqErr } from "../utility/res";
 
-function reqIsNotOk(data: req.CancleBill): boolean {
-  return (
-    (typeof data.billNum).isNotIn(["string", "number"]) ||
-    !isSameAs(data, {
-      stockID: "string",
-      cashCounterID: "string",
-      date: "string",
-    })
-  );
-}
+const reqS = interfaceOf({
+  billNum: applyOr(is.number, is.string),
+  stockID: is.string,
+  cashCounterID: is.string,
+  date: is.string,
+});
 
 export default async function CancleBill(
   data: req.CancleBill,
   context: req.context
 ): Res<null> {
-  if (reqIsNotOk(data)) return { err: true, val: IncorrectReqErr };
+  const cleanData = sanitizeJson(reqS, data);
+  if (cleanData.err) return { err: true, val: IncorrectReqErr };
+  data = cleanData.val;
 
   const user = await checkAuth(context);
   if (user.err) return user;
@@ -25,5 +23,6 @@ export default async function CancleBill(
   const permissionErr = checkPermission(user.val, "accountent");
   if (permissionErr.err) return permissionErr;
 
+  // Todo
   return { err: false, val: null };
 }

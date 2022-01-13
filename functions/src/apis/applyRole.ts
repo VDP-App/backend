@@ -1,23 +1,36 @@
-import { checkApplyClaims } from "../utility/check";
+import {
+  checkIf,
+  interfaceOf,
+  is,
+  isEmail,
+  isUndefinedOr,
+  sanitizeJson,
+  switchOn,
+} from "sanitize-json";
 import { checkAuth, checkPermission } from "../middlewere";
 import { applyClaims, getClaims, getUserByEmail } from "../utility/auth";
 import { AuthorizationLevelErr, IncorrectReqErr } from "../utility/res";
 import { fsValue, paths, setDoc } from "../utility/firestore";
 
-function checkReq(data: req.ApplyRole): res<req.ApplyRole> {
-  const err = { err: true as true, val: IncorrectReqErr };
-  if ([data.email, data.name].checkTypeIsNot("string")) return err;
-  const applyClaim = checkApplyClaims(data.applyClaim);
-  if (!applyClaim && data.applyClaim) return err;
-  return {
-    err: false,
-    val: {
-      email: data.email,
-      applyClaim: applyClaim ?? undefined,
-      name: data.name,
-    },
-  };
-}
+const adminS = interfaceOf({ role: is.string });
+const managerS = interfaceOf({ role: is.string, stockId: is.string });
+const accountentS = interfaceOf({
+  role: is.string,
+  stockId: is.string,
+  cashCounter: is.string,
+});
+const reqS = interfaceOf({
+  email: checkIf(is.string, isEmail),
+  name: is.string,
+  applyClaims: isUndefinedOr(
+    switchOn(
+      (x: any) => x.role,
+      { when: "admin", then: adminS },
+      { when: "manager", then: managerS },
+      { when: "accountent", then: accountentS }
+    )
+  ),
+});
 
 export default async function ApplyRole(
   data: req.ApplyRole,
@@ -25,12 +38,12 @@ export default async function ApplyRole(
 ): Res<null> {
   const err = { err: true as true, val: AuthorizationLevelErr };
 
-  const p = checkReq(data);
-  if (p.err) return p;
-  data = p.val;
+  const cleanData = sanitizeJson(reqS, data);
+  if (cleanData.err) return { err: true, val: IncorrectReqErr };
+  data = cleanData.val;
 
   const claim = data.applyClaim;
-  if (claim === "admin") return err;
+  if (claim?.role === "admin") return err;
 
   const user = await checkAuth(context);
   if (user.err) return user;
