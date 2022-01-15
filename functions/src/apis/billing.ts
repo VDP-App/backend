@@ -1,27 +1,36 @@
-import { interfaceOf, is, checkIf, listOf, sanitizeJson } from "sanitize-json";
+import {
+  isInterfaceAs,
+  isString,
+  isBoolean,
+  checkIfIt,
+  isListOf,
+  sanitizeJson,
+  isNumber,
+  isTruly,
+} from "sanitize-json";
 import { addBill } from "../documents/cashCounter";
 import { checkAuth, checkPermission } from "../middlewere";
 import { paths, runBatch } from "../utility/firestore";
 import { paths as rtPaths, runTransaction } from "../utility/realtime";
 import { IncorrectReqErr, InternalErr } from "../utility/res";
 
-export const validNumS = checkIf<number>(is.number, is.truly);
-const orderS = interfaceOf({
-  iId: is.string,
+export const validNumS = checkIfIt(isNumber, isTruly);
+const orderS = isInterfaceAs({
+  iId: isString,
   q: validNumS,
   a: validNumS,
   r: validNumS,
 });
-const billS = interfaceOf({
-  isWS: is.boolean,
-  inC: is.boolean,
+const billS = isInterfaceAs({
+  isWS: isBoolean,
+  inC: isBoolean,
   mG: validNumS,
-  o: listOf(orderS),
+  o: isListOf(orderS),
 });
-const reqS = interfaceOf({
+const reqS = isInterfaceAs({
   bill: billS,
-  stockID: is.string,
-  cashCounterID: is.string,
+  stockID: isString,
+  cashCounterID: isString,
 });
 
 export default async function Billing(

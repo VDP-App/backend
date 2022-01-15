@@ -1,7 +1,7 @@
 import {
-  checkIf,
-  interfaceOf,
-  is,
+  checkIfIt,
+  isInterfaceAs,
+  isString,
   isEmail,
   isUndefinedOr,
   sanitizeJson,
@@ -13,15 +13,15 @@ import { AuthorizationLevelErr, IncorrectReqErr } from "../utility/res";
 import { paths, setDoc } from "../utility/firestore";
 import { setUser } from "../documents/config";
 
-const managerS = interfaceOf({ role: is.string, stockId: is.string });
-const accountentS = interfaceOf({
-  role: is.string,
-  stockId: is.string,
-  cashCounter: is.string,
+const managerS = isInterfaceAs({ role: isString, stockId: isString });
+const accountentS = isInterfaceAs({
+  role: isString,
+  stockId: isString,
+  cashCounter: isString,
 });
-const reqS = interfaceOf({
-  email: checkIf(is.string, isEmail),
-  name: is.string,
+const reqS = isInterfaceAs({
+  email: checkIfIt(isString, isEmail),
+  name: isString,
   applyClaims: isUndefinedOr(
     switchOn(
       (x: any) => x.role,

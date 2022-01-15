@@ -1,25 +1,25 @@
+import {
+  combine,
+  isInterfaceAs,
+  isString,
+  sanitizeJson,
+  switchOn,
+} from "sanitize-json";
 import { checkAuth, checkPermission } from "../middlewere";
 import { paths, runTransaction } from "../utility/firestore";
 import { InitCashCounter } from "../documents/cashCounter";
 import { InitStock } from "../documents/stock";
 import { IncorrectReqErr } from "../utility/res";
-import {
-  combine,
-  interfaceOf,
-  is,
-  sanitizeJson,
-  switchOn,
-} from "sanitize-json";
 import { setCashCounter, setStock, setUsername } from "../documents/config";
 
-const commonS = interfaceOf({ name: is.string, type: is.string });
-const editS = combine(commonS, interfaceOf({ stockID: is.string }));
-const createC = combine(commonS, interfaceOf({ stockID: is.string }));
+const commonS = isInterfaceAs({ name: isString, type: isString });
+const editS = combine(commonS, isInterfaceAs({ stockID: isString }));
+const createC = combine(commonS, isInterfaceAs({ stockID: isString }));
 const editC = combine(
   commonS,
-  interfaceOf({ stockID: is.string, cashCounterId: is.string })
+  isInterfaceAs({ stockID: isString, cashCounterId: isString })
 );
-const editN = combine(commonS, interfaceOf({ uid: is.string }));
+const editN = combine(commonS, isInterfaceAs({ uid: isString }));
 
 const reqS = switchOn(
   (x: any) => x.type,

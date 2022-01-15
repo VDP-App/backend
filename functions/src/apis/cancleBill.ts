@@ -1,13 +1,19 @@
-import { applyOr, interfaceOf, is, sanitizeJson } from "sanitize-json";
+import {
+  applyOr,
+  isInterfaceAs,
+  isString,
+  isNumber,
+  sanitizeJson,
+} from "sanitize-json";
 import { cancleBill } from "../documents/cashCounter";
 import { checkAuth, checkPermission } from "../middlewere";
 import { paths, runTransaction } from "../utility/firestore";
 import { IncorrectReqErr } from "../utility/res";
 
-const reqS = interfaceOf({
-  billNum: applyOr(is.number, is.string),
-  stockID: is.string,
-  cashCounterID: is.string,
+const reqS = isInterfaceAs({
+  billNum: applyOr(isNumber, isString),
+  stockID: isString,
+  cashCounterID: isString,
 });
 
 export default async function CancleBill(

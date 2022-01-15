@@ -1,8 +1,8 @@
 import {
-  interfaceOf,
-  is,
-  isCallTrue,
-  listOf,
+  isInterfaceAs,
+  isString,
+  isTrueOnCall,
+  isListOf,
   sanitizeJson,
 } from "sanitize-json";
 import { addEntry } from "../documents/stock";
@@ -12,12 +12,15 @@ import { paths, runTransaction } from "../utility/firestore";
 import { IncorrectReqErr } from "../utility/res";
 import { validNumS } from "./billing";
 
-const itemChangesS = interfaceOf({
-  iId: is.string,
+const itemChangesS = isInterfaceAs({
+  iId: isString,
   val: validNumS,
-  type: isCallTrue((x) => x === "set" || x === "increment"),
+  type: isTrueOnCall((x) => x === "set" || x === "increment"),
 });
-const reqS = interfaceOf({ stockID: is.string, changes: listOf(itemChangesS) });
+const reqS = isInterfaceAs({
+  stockID: isString,
+  changes: isListOf(itemChangesS),
+});
 
 export default async function StockChanges(
   data: req.StockChanges,

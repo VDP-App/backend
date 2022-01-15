@@ -15,7 +15,7 @@
   "dependencies": {
     "firebase-admin": "^9.8.0",
     "firebase-functions": "^3.14.1",
-    "sanitize-json": "^1.2.2"
+    "sanitize-json": "^3.0.0"
   },
   "devDependencies": {
     "firebase-functions-test": "^0.2.0",

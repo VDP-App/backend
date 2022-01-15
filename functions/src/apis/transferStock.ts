@@ -1,4 +1,10 @@
-import { interfaceOf, is, listOf, sanitizeJson, switchOn } from "sanitize-json";
+import {
+  isInterfaceAs,
+  isString,
+  isListOf,
+  sanitizeJson,
+  switchOn,
+} from "sanitize-json";
 import { acceptTransfer, sendTransfer } from "../documents/stock";
 import { checkAuth, checkPermission } from "../middlewere";
 import { paths, runTransaction } from "../utility/firestore";
@@ -6,23 +12,23 @@ import { IncorrectReqErr } from "../utility/res";
 import { currentDate } from "../utility/utils";
 import { validNumS } from "./billing";
 
-const itemChangesS = interfaceOf({
-  iId: is.string,
+const itemChangesS = isInterfaceAs({
+  iId: isString,
   send: validNumS,
 });
-const entryS = interfaceOf({
-  sC: listOf(itemChangesS),
+const entryS = isInterfaceAs({
+  sC: isListOf(itemChangesS),
 });
-const sendReqS = interfaceOf({
-  type: is.string,
-  stockID: is.string,
-  sendToStockID: is.string,
+const sendReqS = isInterfaceAs({
+  type: isString,
+  stockID: isString,
+  sendToStockID: isString,
   changes: entryS,
 });
-const reciveReqS = interfaceOf({
-  type: is.string,
-  uniqueID: is.string,
-  stockID: is.string,
+const reciveReqS = isInterfaceAs({
+  type: isString,
+  uniqueID: isString,
+  stockID: isString,
 });
 const reqS = switchOn(
   (x: any) => x.type,

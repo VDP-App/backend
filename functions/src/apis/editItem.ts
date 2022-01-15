@@ -1,4 +1,9 @@
-import { interfaceOf, is, isCallTrue, sanitizeJson } from "sanitize-json";
+import {
+  isInterfaceAs,
+  isString,
+  isTrueOnCall,
+  sanitizeJson,
+} from "sanitize-json";
 import { logAddItem, logRemoveItem, logUpdateItem } from "../documents/logs";
 import { addItem, removeItem, updateItem } from "../documents/products";
 import { checkAuth, checkPermission } from "../middlewere";
@@ -6,22 +11,22 @@ import { paths, runTransaction } from "../utility/firestore";
 import { IncorrectReqErr } from "../utility/res";
 import { validNumS } from "./billing";
 
-const itemS = interfaceOf({
+const itemS = isInterfaceAs({
   cgst: validNumS,
-  code: is.string,
-  collectionName: is.string,
-  name: is.string,
+  code: isString,
+  collectionName: isString,
+  name: isString,
   rate1: validNumS,
   rate2: validNumS,
   sgst: validNumS,
 });
-const typeS = isCallTrue(
+const typeS = isTrueOnCall(
   (x) => x === "create" || x === "remove" || x === "update"
 );
-const reqS = interfaceOf({
+const reqS = isInterfaceAs({
   type: typeS,
   item: itemS,
-  id: is.string,
+  id: isString,
 });
 export default async function EditItem(
   data: req.EditItem,
