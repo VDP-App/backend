@@ -1,8 +1,8 @@
 import { checkAuth, checkPermission } from "../middlewere";
 import { paths, runTransaction } from "../utility/firestore";
-import { InitCashCounter, InitStock } from "../utility/docSetUp";
+import { InitCashCounter } from "../documents/cashCounter";
+import { InitStock } from "../documents/stock";
 import { IncorrectReqErr } from "../utility/res";
-import { randomStr } from "../utility/utils";
 import {
   combine,
   interfaceOf,
@@ -10,6 +10,7 @@ import {
   sanitizeJson,
   switchOn,
 } from "sanitize-json";
+import { setCashCounter, setStock, setUsername } from "../documents/config";
 
 const commonS = interfaceOf({ name: is.string, type: is.string });
 const editS = combine(commonS, interfaceOf({ stockID: is.string }));
@@ -52,22 +53,12 @@ export default async function EditShop(
     let errObj: err | undefined = undefined;
 
     if (data.type === "editName") {
+      setUsername(data.uid, data.name, docChanges);
       returnVal = data.uid;
-      docChanges[`users.${returnVal}.name`] = data.name;
     } else if (data.type === "createStock") {
-      do {
-        returnVal = randomStr();
-      } while (returnVal in doc.stocks);
-      docChanges[`stocks.${returnVal}`] = {
-        name: data.name,
-        cashCounters: { main: { name: "main" } },
-      };
+      [returnVal] = setStock(data, doc, docChanges);
       commits.push(
-        {
-          path: paths.stock(returnVal),
-          type: "create",
-          obj: InitStock(),
-        },
+        { path: paths.stock(returnVal), type: "create", obj: InitStock() },
         {
           path: paths.cashCounter(returnVal, "main"),
           type: "create",
@@ -77,15 +68,9 @@ export default async function EditShop(
     } else {
       if (data.stockID in doc.stocks) {
         if (data.type === "editStock") {
-          returnVal = data.stockID;
-          docChanges[`stocks.${returnVal}.name`] = data.name;
+          [returnVal] = setStock(data, doc, docChanges);
         } else if (data.type === "createCashCounter") {
-          do {
-            returnVal = randomStr();
-          } while (returnVal in doc.stocks[data.stockID].cashCounters);
-          docChanges[`stocks.${data.stockID}.cashCounters.${returnVal}`] = {
-            name: data.name,
-          };
+          [returnVal] = setCashCounter(data, doc, docChanges);
           commits.push({
             path: paths.cashCounter(data.stockID, returnVal),
             type: "create",
@@ -93,10 +78,7 @@ export default async function EditShop(
           });
         } else {
           if (data.cashCounterId in doc.stocks[data.stockID].cashCounters) {
-            returnVal = data.cashCounterId;
-            docChanges[
-              `stocks.${data.stockID}.cashCounters.${returnVal}.name`
-            ] = data.name;
+            [returnVal] = setCashCounter(data, doc, docChanges);
           } else {
             returnVal = "";
             errObj = {

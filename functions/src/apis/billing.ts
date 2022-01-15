@@ -1,6 +1,7 @@
 import { interfaceOf, is, checkIf, listOf, sanitizeJson } from "sanitize-json";
+import { addBill } from "../documents/cashCounter";
 import { checkAuth, checkPermission } from "../middlewere";
-import { fsValue, paths, runBatch } from "../utility/firestore";
+import { paths, runBatch } from "../utility/firestore";
 import { paths as rtPaths, runTransaction } from "../utility/realtime";
 import { IncorrectReqErr, InternalErr } from "../utility/res";
 
@@ -13,7 +14,7 @@ const orderS = interfaceOf({
 });
 const billS = interfaceOf({
   isWS: is.boolean,
-  imC: is.boolean,
+  inC: is.boolean,
   mG: validNumS,
   o: listOf(orderS),
 });
@@ -41,23 +42,6 @@ export default async function Billing(
   });
   if (permissionErr.err) return permissionErr;
 
-  const stockObj: obj = {};
-  let totalMoney = 0,
-    e: order,
-    x: number;
-  for (e of data.bill.o) {
-    stockObj[`currentStocks.${e.iId}`] = fsValue.increment(-e.q);
-    x = Math.floor((e.q * 1000) / e.a);
-    if (Math.abs(e.r - x) > 1100) e.r = x;
-    totalMoney += e.a;
-  }
-
-  const billObj: obj = {};
-  if (data.bill.inC) {
-    billObj["income.online"] = fsValue.increment(data.bill.mG);
-    billObj["income.offline"] = fsValue.increment(totalMoney - data.bill.mG);
-  } else billObj["income.offline"] = fsValue.increment(totalMoney);
-
   const res1 = await runTransaction(
     rtPaths.cashCounterBillNum(data.stockID, data.cashCounterID),
     function (billNum: number) {
@@ -68,7 +52,8 @@ export default async function Billing(
   if (res1.err) return res1;
   if (!res1.val) return { err: true, val: InternalErr };
 
-  billObj[`bills.${res1.val}`] = data.bill;
+  const [billObj, stockObj] = addBill(data.bill, res1.val);
+
   const res2 = await runBatch(
     {
       type: "update",

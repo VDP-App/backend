@@ -34,4 +34,4 @@ exports.transferStock = functions.https.onCall(TransferStock);
 // cancle bills
 exports.cancleBill = functions.https.onCall(CancleBill);
 
-exports.cycle = functions.pubsub.schedule("0 2,3 * * *").onRun(DailyCycle);
+exports.cycle = functions.pubsub.schedule("0 2 * * *").onRun(DailyCycle);

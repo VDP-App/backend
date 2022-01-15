@@ -76,8 +76,8 @@ declare global {
       send: number;
     }
   }
-  interface entry<T> {
-    sC: T[]; //? stockChanges
+  interface entry {
+    sC: stockChanges.inDoc[]; //? stockChanges
     tF?: string; //? transferFrom
     tT?: string; //? transferTo
     uid: string;
@@ -96,14 +96,19 @@ declare global {
   interface obj<T = any> {
     [key: string]: T;
   }
-  interface itemReport {
-    r: number; // retail Consumption
-    w: obj<number>; // wholesell Consumption
-    s: obj<number>; // stock Changes
-    tF: obj<number>; // stock Transfered From
-    tT: obj<number>; // stock Transfered To
-  }
+  type log = {
+    item: item;
+    itemId: string;
+    createdAt: string;
+    createdBy: string;
+  } & ({ type: "create" | "remove" } | { type: "update"; oldItem: item });
   namespace documents {
+    interface logs {
+      logs: log[];
+      createItem: number[];
+      removeItem: number[];
+      updateItem: number[];
+    }
     interface config_products {
       log: { count: number; page: number };
       ids: string[];
@@ -121,7 +126,7 @@ declare global {
       };
     }
     interface stock {
-      entry: entry<stockChanges.inDoc>[];
+      entry: entry[];
       currentStocks: { [itemID: string]: number | undefined };
       transferNotifications: {
         [uniqueId: string]: {
@@ -138,10 +143,8 @@ declare global {
     }
     interface summery {
       bills: bill[];
-      entry: entry<stockChanges.inDoc>[];
-      income: number;
+      entry: entry[];
       stockSnapShot: { [itemId: string]: number | undefined };
-      report: { [itemId: string]: itemReport | undefined };
     }
   }
   namespace bgFn {
@@ -185,14 +188,14 @@ declare global {
     }
     interface StockChanges {
       stockID: string;
-      changes: entry<stockChanges.inReq>;
+      changes: stockChanges.inReq[];
     }
     type TransferStock =
       | {
           type: "send";
           stockID: string;
           sendToStockID: string;
-          changes: entry<stockChanges.inSendTransfer>;
+          changes: stockChanges.inSendTransfer[];
         }
       | { type: "recive"; uniqueID: string; stockID: string };
   }

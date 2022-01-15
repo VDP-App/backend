@@ -1,17 +1,10 @@
-import {
-  checkIf,
-  interfaceOf,
-  is,
-  isCallTrue,
-  sanitizeJson,
-} from "sanitize-json";
+import { interfaceOf, is, isCallTrue, sanitizeJson } from "sanitize-json";
+import { logAddItem, logRemoveItem, logUpdateItem } from "../documents/logs";
+import { addItem, removeItem, updateItem } from "../documents/products";
 import { checkAuth, checkPermission } from "../middlewere";
-import { fsValue, paths, runTransaction } from "../utility/firestore";
+import { paths, runTransaction } from "../utility/firestore";
 import { IncorrectReqErr } from "../utility/res";
-import { randomStr } from "../utility/utils";
 import { validNumS } from "./billing";
-
-const MaxLogCount = 100;
 
 const itemS = interfaceOf({
   cgst: validNumS,
@@ -22,9 +15,8 @@ const itemS = interfaceOf({
   rate2: validNumS,
   sgst: validNumS,
 });
-const typeS = checkIf(
-  is.string,
-  isCallTrue((x) => x == "create" || x == "remove" || x == "update")
+const typeS = isCallTrue(
+  (x) => x === "create" || x === "remove" || x === "update"
 );
 const reqS = interfaceOf({
   type: typeS,
@@ -48,36 +40,27 @@ export default async function EditItem(
   return await runTransaction(
     paths.products,
     function (doc: documents.config_products) {
-      const page = doc.log.page;
-      const isPageNew = doc.log.count >= MaxLogCount;
+      let page: number;
+      let isPageNew: boolean;
 
-      const productObj: obj = {
-        "log.count": fsValue.increment(1),
-      };
+      const productObj: obj = {};
 
-      if (isPageNew) {
-        productObj["log.count"] = 0;
-        productObj["log.page"] = fsValue.increment(1);
-      }
-
-      const log: obj = {
-        ...data,
-        createdBy: user.val.uid,
-        createdAt: Date(),
-      };
+      const logObj: obj = {};
 
       if (data.type === "remove") {
-        productObj.ids = fsValue.arrayRemove(data.id);
-        const p = `items.${data.id}.`;
-        productObj[p + "code"] = fsValue.delete();
-        productObj[p + "collectionName"] = fsValue.delete();
+        [isPageNew, page] = removeItem(doc, data.id, productObj);
+        logRemoveItem(data.id, user.val.uid, data.item, doc, logObj);
       } else if (data.type === "create") {
-        while (data.id in doc.items) data.id = randomStr();
-        productObj.ids = fsValue.arrayUnion(data.id);
-        productObj[`items.${data.id}`] = data.item;
+        [isPageNew, page, data.id] = addItem(
+          doc,
+          data.id,
+          data.item,
+          productObj
+        );
+        logAddItem(data.id, user.val.uid, data.item, doc, logObj);
       } else {
-        productObj[`items.${data.id}`] = data.item;
-        log.oldItem = doc.items[data.id];
+        [isPageNew, page] = updateItem(doc, data.id, data.item, productObj);
+        logUpdateItem(data.id, user.val.uid, data.item, doc, logObj);
       }
 
       return {
@@ -85,10 +68,7 @@ export default async function EditItem(
         commits: {
           type: isPageNew ? "create" : "update",
           path: paths.logs(page),
-          obj: {
-            logs: fsValue.arrayUnion(log),
-            [data.type + "-item"]: fsValue.arrayUnion(doc.log.count),
-          },
+          obj: logObj,
         },
         returnVal: data,
       };

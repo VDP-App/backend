@@ -1,6 +1,7 @@
 import { interfaceOf, is, listOf, sanitizeJson, switchOn } from "sanitize-json";
+import { acceptTransfer, sendTransfer } from "../documents/stock";
 import { checkAuth, checkPermission } from "../middlewere";
-import { fsValue, paths, runTransaction } from "../utility/firestore";
+import { paths, runTransaction } from "../utility/firestore";
 import { IncorrectReqErr } from "../utility/res";
 import { currentDate } from "../utility/utils";
 import { validNumS } from "./billing";
@@ -48,52 +49,23 @@ export default async function TransferStock(
   return runTransaction<documents.stock, string | number>(
     paths.stock(data.stockID),
     function (doc) {
-      let changes: stockChanges.inSendTransfer;
-      const stockChanges: stockChanges.inDoc[] = [];
       const updateDoc: obj = {};
       const otherStockDoc: obj = {};
       let returnVal: string | number;
       if (data.type === "send") {
         returnVal = `${data.stockID}_${currentDate()}_${doc.entry.length + 1}`;
-        for (changes of data.changes.sC) {
-          stockChanges.push({
-            i: -changes.send,
-            iId: changes.iId,
-            n: (doc.currentStocks[changes.iId] ?? 0) - changes.send,
-          });
-          updateDoc[`currentStocks.${changes.iId}`] = fsValue.increment(
-            -changes.send
-          );
-        }
-        otherStockDoc[`transferNotifications.${returnVal}`] = {
-          tF: data.stockID,
-          sC: data.changes.sC,
-          sUid: user.val.uid,
-        };
-        updateDoc.entry = fsValue.arrayUnion({
-          sC: stockChanges,
-          tT: data.sendToStockID,
-          uid: user.val.uid,
-        });
+        sendTransfer(
+          doc,
+          user.val.uid,
+          { to: data.sendToStockID, from: data.stockID },
+          returnVal,
+          data.changes,
+          updateDoc,
+          otherStockDoc
+        );
       } else {
-        const transferData = doc.transferNotifications[data.uniqueID];
         returnVal = doc.entry.length + 1;
-        for (changes of transferData.sC) {
-          stockChanges.push({
-            i: changes.send,
-            iId: changes.iId,
-            n: (doc.currentStocks[changes.iId] ?? 0) - changes.send,
-          });
-          updateDoc[`currentStocks.${changes.iId}`] = fsValue.increment(
-            changes.send
-          );
-        }
-        updateDoc.entry = fsValue.arrayUnion({
-          sC: stockChanges,
-          tF: transferData.tF,
-          uid: user.val.uid,
-          sUid: transferData.sUid,
-        });
+        acceptTransfer(doc, data.uniqueID, user.val.uid, updateDoc);
       }
       return {
         returnVal: returnVal,

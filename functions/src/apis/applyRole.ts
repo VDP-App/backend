@@ -10,7 +10,8 @@ import {
 import { checkAuth, checkPermission } from "../middlewere";
 import { applyClaims, getClaims, getUserByEmail } from "../utility/auth";
 import { AuthorizationLevelErr, IncorrectReqErr } from "../utility/res";
-import { fsValue, paths, setDoc } from "../utility/firestore";
+import { paths, setDoc } from "../utility/firestore";
+import { setUser } from "../documents/config";
 
 const managerS = interfaceOf({ role: is.string, stockId: is.string });
 const accountentS = interfaceOf({
@@ -56,13 +57,13 @@ export default async function ApplyRole(
   const configObj: obj = {};
 
   if (claim) {
-    configObj[`users.${otherUser.val.uid}`] = {
-      email: otherUser.val.email,
-      name: data.name,
-      claim: getClaims(claim),
-    };
+    setUser(
+      otherUser.val.uid,
+      { email: data.email, name: data.name, claim: getClaims(claim) },
+      configObj
+    );
   } else if (otherUser.val.customClaims) {
-    configObj[`users.${otherUser.val.uid}`] = fsValue.delete();
+    setUser(otherUser.val.uid, undefined, configObj);
   }
 
   await applyClaims(data.email, claim);
