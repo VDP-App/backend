@@ -11,7 +11,7 @@ import TransferStock from "./apis/transferStock";
 import DailyCycle from "./jobs/dailyCycle";
 
 // make || remove => admin
-exports.adminRole = functions.database.ref("/admin/{email}").onWrite(AdminRole);
+exports.adminRole = functions.database.ref("/admin/{uid}").onWrite(AdminRole);
 
 // manager || accountent || remove
 exports.applyRole = functions.https.onCall(ApplyRole);

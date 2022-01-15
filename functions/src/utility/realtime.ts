@@ -7,7 +7,7 @@ const db = app.database();
 export const rtIncrement = database.ServerValue.increment;
 
 export const paths = {
-  admin: (email: string) => `admin/${email}`,
+  admin: (uid: string) => `admin/${uid}`,
   cashCounterBillNum: (stockID: string, cashCounterID: string, date?: string) =>
     `billNum/${stockID}-${cashCounterID}/${date ?? currentDate()}`,
   currentDate: "currentDate",

@@ -1,5 +1,5 @@
 import { setUser } from "../documents/config";
-import { applyClaims, getClaims, getUserByEmail } from "../utility/auth";
+import { applyClaims, getClaims, getUser } from "../utility/auth";
 import { setDoc, paths as fsPaths } from "../utility/firestore";
 import { paths, setObj } from "../utility/realtime";
 
@@ -11,11 +11,11 @@ export default async function AdminRole(
     | ({ status: "🤔🤔🤔" } & err)
     | { status: "👍👍👍"; message: string }
     | undefined = undefined;
-  const email: string = context.params.email;
+  const uid: string = context.params.uid;
   let claim: applyClaim | null = undefined;
   const val = change.after.val();
 
-  const user = await getUserByEmail(email);
+  const user = await getUser(uid);
 
   if (user.err)
     obj = {
@@ -24,7 +24,7 @@ export default async function AdminRole(
       message: "" + user.originalErr?.() || user.val.message,
     };
   else {
-    const uid = user.val.uid;
+    const email = user.val.email ?? "";
 
     if (val === "make") {
       claim = { role: "admin" };
@@ -65,5 +65,5 @@ export default async function AdminRole(
     }
   }
 
-  if (obj) await setObj(paths.admin(email), obj);
+  if (obj) await setObj(paths.admin(uid), obj);
 }
