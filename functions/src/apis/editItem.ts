@@ -9,10 +9,10 @@ import { checkAuth, checkPermission } from "../middlewere";
 import { fsValue, paths, runTransaction } from "../utility/firestore";
 import { IncorrectReqErr } from "../utility/res";
 import { randomStr } from "../utility/utils";
+import { validNumS } from "./billing";
 
 const MaxLogCount = 100;
 
-const validNumS = checkIf<number>(is.number, is.truly);
 const itemS = interfaceOf({
   cgst: validNumS,
   code: is.string,

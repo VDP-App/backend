@@ -10,6 +10,7 @@ export const paths = {
   admin: (email: string) => `admin/${email}`,
   cashCounterBillNum: (stockID: string, cashCounterID: string, date?: string) =>
     `billNum/${stockID}-${cashCounterID}/${date ?? currentDate()}`,
+  currentDate: "currentDate",
 };
 
 export function getObj<T>(path: string) {

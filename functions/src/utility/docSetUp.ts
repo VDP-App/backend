@@ -9,6 +9,5 @@ export function InitCashCounter(): documents.cashCounter {
   return {
     bills: {},
     income: { online: 0, offline: 0 },
-    stockConsumed: {},
   };
 }

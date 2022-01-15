@@ -12,6 +12,8 @@ export const paths = {
   stock: (stockID: string) => `stocks/${stockID}`,
   cashCounter: (stockID: string, cashCounterID: string) =>
     `stocks/${stockID}/cashCounters/${cashCounterID}`,
+  summery: (stockId: string, date: string) =>
+    `stocks/${stockId}/summery/${date}`,
 };
 
 export function getDoc<T>(docPath: string) {
@@ -28,7 +30,7 @@ export function setDoc(docPath: string, type: "create" | "update", obj: obj) {
     .future(() => null);
 }
 
-export function runBatch(commits: commit[]) {
+export function runBatch(...commits: commit[]) {
   const batch = db.batch();
   for (const commit of commits) {
     if (commit.ignore) continue;
@@ -55,15 +57,51 @@ export async function runTransaction<T, R = null>(
       );
       if (res.updateDoc) transaction.update(ref, res.updateDoc);
       if (res.commits) {
-        if (!Array.isArray(res.commits)) res.commits = [res.commits];
-        for (const commit of res.commits) {
-          if (commit.ignore) continue;
-          if (commit.type === "delete") transaction.delete(db.doc(commit.path));
-          else transaction[commit.type](db.doc(commit.path), commit.obj);
-        }
+        if (Array.isArray(res.commits)) {
+          let commit: commit;
+          for (commit of res.commits) {
+            if (commit.ignore) continue;
+            if (commit.type === "delete")
+              transaction.delete(db.doc(commit.path));
+            else transaction[commit.type](db.doc(commit.path), commit.obj);
+          }
+        } else res.commits = [res.commits];
       }
       if (res.err) return { err: true, val: res.err };
       return { err: false, val: res.returnVal };
+    })
+    .future();
+  return x_1.err ? x_1 : x_1.val;
+}
+
+export async function runTransactionComplete(
+  processDoc: (
+    getDocs: (paths: string[]) => Promise<any[]>
+  ) => Promise<completeCommit[]>
+): Res<null> {
+  const x_1 = await db
+    .runTransaction<res<null>>(async function (transaction) {
+      const refs: firestore.DocumentReference<firestore.DocumentData>[] = [];
+      const commits = await processDoc(async function (paths) {
+        let path: string;
+        for (path of paths) refs.push(db.doc(path));
+        const x = await transaction.getAll(...refs);
+        const y: any[] = [];
+        let doc: firestore.DocumentSnapshot<firestore.DocumentData>;
+        for (doc of x) y.push(doc.data());
+        return y;
+      });
+      if (commits) {
+        let commit: completeCommit;
+        for (commit of commits) {
+          if (commit.ignore) continue;
+          if (commit.type === "delete") transaction.delete(db.doc(commit.path));
+          else if (commit.type === "set")
+            transaction.set(db.doc(commit.path), commit.obj);
+          else transaction[commit.type](db.doc(commit.path), commit.obj);
+        }
+      }
+      return { err: false, val: null };
     })
     .future();
   return x_1.err ? x_1 : x_1.val;

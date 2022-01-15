@@ -1,5 +1,6 @@
 import { auth } from "firebase-admin";
-import { functions } from "./init";
+import * as functions from "firebase-functions";
+import { EventContext } from "firebase-functions";
 
 declare global {
   type LikePromise<T> = Promise<T> | T;
@@ -47,40 +48,60 @@ declare global {
     sgst: number;
   }
   interface order {
-    iId: string;
-    q: number;
-    a: number;
-    r: number;
+    iId: string; //? itemId
+    q: number; //? quntity
+    a: number; //? amount
+    r: number; //? rate
   }
   interface bill {
-    isWS: boolean;
-    inC: boolean;
-    mG: number;
-    o: order[];
+    isWS: boolean; //? isWholeSell
+    inC: boolean; //? inCash
+    mG: number; //? moneyGiven
+    o: order[]; //? orders
+    uid: string;
   }
-  interface stockChanges {
-    iId: string;
+  namespace stockChanges {
+    interface inDoc {
+      iId: string; //? itemId
+      n: number; //? now
+      i: number; //? increment
+    }
+    interface inReq {
+      iId: string; //? itemId
+      val: number;
+      type: "set" | "increment";
+    }
+    interface inSendTransfer {
+      iId: string; //? itemId
+      send: number;
+    }
   }
-  interface stockChangesInDoc extends stockChanges {
-    n: number;
-    i: number;
+  interface entry<T> {
+    sC: T[]; //? stockChanges
+    tF?: string; //? transferFrom
+    tT?: string; //? transferTo
+    uid: string;
+    sUid?: string; //? sender's uid
   }
-  interface stockChangesInReq extends stockChanges {
-    val: number;
-    type: "set" | "increment";
-  }
-  interface entry<T extends stockChanges> {
-    sC: T[];
-    fT?: boolean;
-  }
-  interface transferEntry {}
   type commit =
     | { path: string; ignore?: boolean } & (
         | { type: "update" | "create"; obj: obj }
         | { type: "delete" }
       );
+  type completeCommit =
+    | { path: string; ignore?: boolean } & (
+        | { type: "update" | "create" | "set"; obj: obj }
+        | { type: "delete" }
+      );
   interface obj<T = any> {
     [key: string]: T;
+  }
+  interface itemReport {
+    r: number; // retail Consumption
+    w: obj<number>; // wholesell Consumption
+    s: obj<number>; // stock Changes
+    tF: obj<number>; // stock Transfered From
+    tT: obj<number>; // stock Transfered To
   }
   namespace documents {
     interface config_products {
@@ -92,37 +113,44 @@ declare global {
       stocks: {
         [stockId: string]: {
           name: string;
-          cashCounters: {
-            [cashCounterId: string]: {
-              name: string;
-            };
-          };
+          cashCounters: { [cashCounterId: string]: { name: string } };
         };
       };
       users: {
-        [uid: string]: {
-          email: string;
-          name: string;
-          claim: claim;
-        };
+        [uid: string]: { email: string; name: string; claim: claim };
       };
     }
     interface stock {
-      entry: entry<stockChangesInDoc>[];
+      entry: entry<stockChanges.inDoc>[];
       currentStocks: { [itemID: string]: number | undefined };
-      transferNotifications: { [uniqueId: string]: transferEntry };
+      transferNotifications: {
+        [uniqueId: string]: {
+          sC: stockChanges.inSendTransfer[]; //? stockChanges
+          tF: string; //? transferFrom
+          sUid: string;
+        };
+      };
+      // ! uniqueId == stockId_date_entryNum
     }
     interface cashCounter {
       bills: { [billNum: string]: bill };
       income: { online: number; offline: number };
-      stockConsumed: { [itemID: string]: number | undefined };
-      cancledBillNum?: string[];
+    }
+    interface summery {
+      bills: bill[];
+      entry: entry<stockChanges.inDoc>[];
+      income: number;
+      stockSnapShot: { [itemId: string]: number | undefined };
+      report: { [itemId: string]: itemReport | undefined };
     }
   }
   namespace bgFn {
     namespace rtDb {
       type changes = functions.Change<functions.database.DataSnapshot>;
       type context = functions.EventContext;
+    }
+    namespace schedule {
+      type context = EventContext;
     }
   }
   namespace req {
@@ -154,11 +182,18 @@ declare global {
       billNum: number | string;
       stockID: string;
       cashCounterID: string;
-      date: string;
     }
     interface StockChanges {
       stockID: string;
-      changes: entry<stockChangesInReq>;
+      changes: entry<stockChanges.inReq>;
     }
+    type TransferStock =
+      | {
+          type: "send";
+          stockID: string;
+          sendToStockID: string;
+          changes: entry<stockChanges.inSendTransfer>;
+        }
+      | { type: "recive"; uniqueID: string; stockID: string };
   }
 }

@@ -1,10 +1,10 @@
 import { interfaceOf, is, checkIf, listOf, sanitizeJson } from "sanitize-json";
 import { checkAuth, checkPermission } from "../middlewere";
-import { fsValue, paths, setDoc } from "../utility/firestore";
+import { fsValue, paths, runBatch } from "../utility/firestore";
 import { paths as rtPaths, runTransaction } from "../utility/realtime";
 import { IncorrectReqErr, InternalErr } from "../utility/res";
 
-const validNumS = checkIf<number>(is.number, is.truly);
+export const validNumS = checkIf<number>(is.number, is.truly);
 const orderS = interfaceOf({
   iId: is.string,
   q: validNumS,
@@ -33,6 +33,7 @@ export default async function Billing(
 
   const user = await checkAuth(context);
   if (user.err) return user;
+  data.bill.uid = user.val.uid;
 
   const permissionErr = checkPermission(user.val, "accountent", {
     stockID: data.stockID,
@@ -40,10 +41,12 @@ export default async function Billing(
   });
   if (permissionErr.err) return permissionErr;
 
+  const stockObj: obj = {};
   let totalMoney = 0,
     e: order,
     x: number;
   for (e of data.bill.o) {
+    stockObj[`currentStocks.${e.iId}`] = fsValue.increment(-e.q);
     x = Math.floor((e.q * 1000) / e.a);
     if (Math.abs(e.r - x) > 1100) e.r = x;
     totalMoney += e.a;
@@ -66,10 +69,17 @@ export default async function Billing(
   if (!res1.val) return { err: true, val: InternalErr };
 
   billObj[`bills.${res1.val}`] = data.bill;
-  const res2 = await setDoc(
-    paths.cashCounter(data.stockID, data.cashCounterID),
-    "update",
-    billObj
+  const res2 = await runBatch(
+    {
+      type: "update",
+      path: paths.cashCounter(data.stockID, data.cashCounterID),
+      obj: billObj,
+    },
+    {
+      type: "update",
+      path: paths.stock(data.stockID),
+      obj: stockObj,
+    }
   );
   if (res2.err) return res2;
 

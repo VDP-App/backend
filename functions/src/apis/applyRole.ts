@@ -12,7 +12,6 @@ import { applyClaims, getClaims, getUserByEmail } from "../utility/auth";
 import { AuthorizationLevelErr, IncorrectReqErr } from "../utility/res";
 import { fsValue, paths, setDoc } from "../utility/firestore";
 
-const adminS = interfaceOf({ role: is.string });
 const managerS = interfaceOf({ role: is.string, stockId: is.string });
 const accountentS = interfaceOf({
   role: is.string,
@@ -25,7 +24,6 @@ const reqS = interfaceOf({
   applyClaims: isUndefinedOr(
     switchOn(
       (x: any) => x.role,
-      { when: "admin", then: adminS },
       { when: "manager", then: managerS },
       { when: "accountent", then: accountentS }
     )

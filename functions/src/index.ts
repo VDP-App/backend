@@ -2,11 +2,13 @@ import "./prototype";
 import { functions } from "./init";
 import EditItem from "./apis/editItem";
 import ApplyRole from "./apis/applyRole";
-import AdminRole from "./apis/adminRole";
+import AdminRole from "./jobs/adminRole";
 import Billing from "./apis/billing";
 import EditShop from "./apis/editShop";
 import CancleBill from "./apis/cancleBill";
 import StockChanges from "./apis/stockChanges";
+import TransferStock from "./apis/transferStock";
+import DailyCycle from "./jobs/dailyCycle";
 
 // make || remove => admin
 exports.adminRole = functions.database.ref("/admin/{email}").onWrite(AdminRole);
@@ -27,9 +29,9 @@ exports.billing = functions.https.onCall(Billing);
 exports.stockChanges = functions.https.onCall(StockChanges);
 
 // send || accept
-exports.transfer = "";
-
-exports.cycle = "";
+exports.transferStock = functions.https.onCall(TransferStock);
 
 // cancle bills
 exports.cancleBill = functions.https.onCall(CancleBill);
+
+exports.cycle = functions.pubsub.schedule("0 2,3 * * *").onRun(DailyCycle);
