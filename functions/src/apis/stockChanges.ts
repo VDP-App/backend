@@ -1,7 +1,7 @@
 import {
   isInterfaceAs,
   isString,
-  isTrueOnCall,
+  is,
   isListOf,
   sanitizeJson,
 } from "sanitize-json";
@@ -10,12 +10,12 @@ import { checkAuth, checkPermission } from "../middlewere";
 import { paths, runTransaction } from "../utility/firestore";
 
 import { IncorrectReqErr } from "../utility/res";
-import { validNumS } from "./billing";
+import { isValidNumS } from "./billing";
 
 const itemChangesS = isInterfaceAs({
   iId: isString,
-  val: validNumS,
-  type: isTrueOnCall((x) => x === "set" || x === "increment"),
+  val: isValidNumS,
+  type: is((x) => x === "set" || x === "increment"),
 });
 const reqS = isInterfaceAs({
   stockID: isString,

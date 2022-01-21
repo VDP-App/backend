@@ -10,31 +10,27 @@ import { checkAuth, checkPermission } from "../middlewere";
 import { paths, runTransaction } from "../utility/firestore";
 import { IncorrectReqErr } from "../utility/res";
 import { currentDate } from "../utility/utils";
-import { validNumS } from "./billing";
+import { isValidNumS } from "./billing";
 
 const itemChangesS = isInterfaceAs({
   iId: isString,
-  send: validNumS,
-});
-const entryS = isInterfaceAs({
-  sC: isListOf(itemChangesS),
+  send: isValidNumS,
 });
 const sendReqS = isInterfaceAs({
   type: isString,
   stockID: isString,
   sendToStockID: isString,
-  changes: entryS,
+  changes: isListOf(itemChangesS),
 });
 const reciveReqS = isInterfaceAs({
   type: isString,
   uniqueID: isString,
   stockID: isString,
 });
-const reqS = switchOn(
-  (x: any) => x.type,
-  { when: "send", then: sendReqS },
-  { when: "recive", then: reciveReqS }
-);
+const reqS = switchOn((x: any) => x.type, {
+  send: sendReqS,
+  recive: reciveReqS,
+});
 
 export default async function TransferStock(
   data: req.TransferStock,

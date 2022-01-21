@@ -1,28 +1,21 @@
-import {
-  isInterfaceAs,
-  isString,
-  isTrueOnCall,
-  sanitizeJson,
-} from "sanitize-json";
+import { isInterfaceAs, isString, is, sanitizeJson } from "sanitize-json";
 import { logAddItem, logRemoveItem, logUpdateItem } from "../documents/logs";
 import { addItem, removeItem, updateItem } from "../documents/products";
 import { checkAuth, checkPermission } from "../middlewere";
 import { paths, runTransaction } from "../utility/firestore";
 import { IncorrectReqErr } from "../utility/res";
-import { validNumS } from "./billing";
+import { isValidNumS } from "./billing";
 
 const itemS = isInterfaceAs({
-  cgst: validNumS,
+  cgst: isValidNumS,
   code: isString,
   collectionName: isString,
   name: isString,
-  rate1: validNumS,
-  rate2: validNumS,
-  sgst: validNumS,
+  rate1: isValidNumS,
+  rate2: isValidNumS,
+  sgst: isValidNumS,
 });
-const typeS = isTrueOnCall(
-  (x) => x === "create" || x === "remove" || x === "update"
-);
+const typeS = is((x) => x === "create" || x === "remove" || x === "update");
 const reqS = isInterfaceAs({
   type: typeS,
   item: itemS,

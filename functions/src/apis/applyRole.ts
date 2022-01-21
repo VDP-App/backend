@@ -23,11 +23,7 @@ const reqS = isInterfaceAs({
   email: checkIfIt(isString, isEmail),
   name: isString,
   applyClaims: isUndefinedOr(
-    switchOn(
-      (x: any) => x.role,
-      { when: "manager", then: managerS },
-      { when: "accountent", then: accountentS }
-    )
+    switchOn((x: any) => x.role, { manager: managerS, accountent: accountentS })
   ),
 });
 

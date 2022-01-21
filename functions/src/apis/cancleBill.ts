@@ -1,5 +1,5 @@
 import {
-  applyOr,
+  either,
   isInterfaceAs,
   isString,
   isNumber,
@@ -11,7 +11,7 @@ import { paths, runTransaction } from "../utility/firestore";
 import { IncorrectReqErr } from "../utility/res";
 
 const reqS = isInterfaceAs({
-  billNum: applyOr(isNumber, isString),
+  billNum: either(isNumber, isString),
   stockID: isString,
   cashCounterID: isString,
 });
@@ -19,7 +19,7 @@ const reqS = isInterfaceAs({
 export default async function CancleBill(
   data: req.CancleBill,
   context: req.context
-): Res<null> {
+): Res<bill> {
   const cleanData = sanitizeJson(reqS, data);
   if (cleanData.err) return { err: true, val: IncorrectReqErr };
   data = cleanData.val;
@@ -33,16 +33,16 @@ export default async function CancleBill(
   });
   if (permissionErr.err) return permissionErr;
 
-  return runTransaction(
+  return runTransaction<documents.cashCounter, bill>(
     paths.cashCounter(data.stockID, data.cashCounterID),
-    function (doc: documents.cashCounter) {
+    function (doc) {
       const [proceed, updateDoc, updateStockDoc] = cancleBill(
         doc,
         data.billNum
       );
       if (proceed)
         return {
-          returnVal: null,
+          returnVal: doc.bills[data.billNum],
           updateDoc,
           commits: {
             type: "update",
@@ -50,7 +50,12 @@ export default async function CancleBill(
             obj: updateStockDoc,
           },
         };
-      else return { returnVal: null };
+      return {
+        err: {
+          code: "No such bill",
+          message: "Either no such Bill exists or bill is already deleted",
+        },
+      };
     }
   );
 }

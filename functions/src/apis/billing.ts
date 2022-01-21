@@ -6,7 +6,7 @@ import {
   isListOf,
   sanitizeJson,
   isNumber,
-  isTruly,
+  isInteger,
 } from "sanitize-json";
 import { addBill } from "../documents/cashCounter";
 import { checkAuth, checkPermission } from "../middlewere";
@@ -14,17 +14,17 @@ import { paths, runBatch } from "../utility/firestore";
 import { paths as rtPaths, runTransaction } from "../utility/realtime";
 import { IncorrectReqErr, InternalErr } from "../utility/res";
 
-export const validNumS = checkIfIt(isNumber, isTruly);
+export const isValidNumS = checkIfIt(isNumber, isInteger);
 const orderS = isInterfaceAs({
   iId: isString,
-  q: validNumS,
-  a: validNumS,
-  r: validNumS,
+  q: isValidNumS,
+  a: isValidNumS,
+  r: isValidNumS,
 });
 const billS = isInterfaceAs({
   isWS: isBoolean,
   inC: isBoolean,
-  mG: validNumS,
+  mG: isValidNumS,
   o: isListOf(orderS),
 });
 const reqS = isInterfaceAs({

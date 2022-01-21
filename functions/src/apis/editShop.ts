@@ -21,14 +21,13 @@ const editC = combine(
 );
 const editN = combine(commonS, isInterfaceAs({ uid: isString }));
 
-const reqS = switchOn(
-  (x: any) => x.type,
-  { when: "createStock", then: commonS },
-  { when: "editStock", then: editS },
-  { when: "createCashCounter", then: createC },
-  { when: "editCashCounter", then: editC },
-  { when: "editName", then: editN }
-);
+const reqS = switchOn((x: any) => x.type, {
+  createStock: commonS,
+  editStock: editS,
+  createCashCounter: createC,
+  editCashCounter: editC,
+  editName: editN,
+});
 export default async function EditShop(
   data: req.EditShop,
   context: req.context

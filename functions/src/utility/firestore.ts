@@ -46,8 +46,8 @@ export async function runTransaction<T, R = null>(
     commits?: commit[] | commit;
     updateDoc?: obj;
     returnVal: R;
-    err?: err;
-  }>
+    err?: undefined;
+  } | {err: err}>
 ): Res<R> {
   const x_1 = await db
     .runTransaction<res<R>>(async function (transaction) {
@@ -55,6 +55,7 @@ export async function runTransaction<T, R = null>(
       const res = await processDoc(
         (await transaction.get(ref).then((x) => x.data())) as any
       );
+      if (res.err) return { err: true, val: res.err };
       if (res.updateDoc) transaction.update(ref, res.updateDoc);
       if (res.commits) {
         if (Array.isArray(res.commits)) {
@@ -67,7 +68,6 @@ export async function runTransaction<T, R = null>(
           }
         } else res.commits = [res.commits];
       }
-      if (res.err) return { err: true, val: res.err };
       return { err: false, val: res.returnVal };
     })
     .future();
