@@ -61,15 +61,13 @@ export async function runTransaction<T, R = null>(
       if (res.err) return { err: true, val: res.err };
       if (res.updateDoc) transaction.update(ref, res.updateDoc);
       if (res.commits) {
-        if (Array.isArray(res.commits)) {
-          let commit: commit;
-          for (commit of res.commits) {
-            if (commit.ignore) continue;
-            if (commit.type === "delete")
-              transaction.delete(db.doc(commit.path));
-            else transaction[commit.type](db.doc(commit.path), commit.obj);
-          }
-        } else res.commits = [res.commits];
+        if (!Array.isArray(res.commits)) res.commits = [res.commits];
+        let commit: commit;
+        for (commit of res.commits) {
+          if (commit.ignore) continue;
+          if (commit.type === "delete") transaction.delete(db.doc(commit.path));
+          else transaction[commit.type](db.doc(commit.path), commit.obj);
+        }
       }
       return { err: false, val: res.returnVal };
     })

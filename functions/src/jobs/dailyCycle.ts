@@ -52,5 +52,5 @@ export default async function DailyCycle(context: bgFn.schedule.context) {
     }
     return commits;
   });
-  return setObj(rtPaths.currentDate, currentDate());
+  return await setObj(rtPaths.currentDate, currentDate());
 }

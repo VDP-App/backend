@@ -45,7 +45,7 @@ export default async function EditShop(
     else if (user.val.uid !== data.uid) return permissionErr;
   }
 
-  return runTransaction(paths.config, function (doc: documents.config_config) {
+  return await runTransaction(paths.config, function (doc: documents.config_config) {
     const docChanges: obj = {};
     const commits: commit[] = [];
     let returnVal: string;

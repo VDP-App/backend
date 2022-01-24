@@ -33,7 +33,7 @@ export default async function CancleBill(
   });
   if (permissionErr.err) return permissionErr;
 
-  return runTransaction<documents.cashCounter, bill>(
+  return await  runTransaction<documents.cashCounter, bill>(
     paths.cashCounter(data.stockID, data.cashCounterID),
     function (doc) {
       const [proceed, updateDoc, updateStockDoc] = cancleBill(

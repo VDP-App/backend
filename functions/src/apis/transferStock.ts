@@ -48,7 +48,7 @@ export default async function TransferStock(
   });
   if (permissionErr.err) return permissionErr;
 
-  return runTransaction<documents.stock, string | number>(
+  return await runTransaction<documents.stock, string | number>(
     paths.stock(data.stockID),
     function (doc) {
       const updateDoc: obj = {};

@@ -64,5 +64,5 @@ export default async function ApplyRole(
 
   await applyClaims(data.email, claim);
 
-  return setDoc(paths.config, "update", configObj);
+  return await setDoc(paths.config, "update", configObj);
 }

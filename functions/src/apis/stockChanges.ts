@@ -38,7 +38,7 @@ export default async function StockChanges(
   });
   if (permissionErr.err) return permissionErr;
 
-  return runTransaction(
+  return await runTransaction(
     paths.stock(data.stockID),
     function (doc: documents.stock) {
       const updateDoc: obj = addEntry(doc, user.val.uid, data.changes);
