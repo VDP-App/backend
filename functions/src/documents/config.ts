@@ -18,35 +18,35 @@ export function setUsername(uid: string, name: string, configObj: obj = {}) {
 }
 
 export function setStock(
-  val: { name: string; stockId?: string },
+  val: { name: string; stockID?: string },
   doc: _this,
   configObj: obj = {}
 ): [string, obj] {
-  if (val.stockId === undefined) {
-    do val.stockId = randomStr();
-    while (val.stockId in doc.stocks);
-    configObj[`stocks.${val.stockId}`] = {
+  if (val.stockID === undefined) {
+    do val.stockID = randomStr();
+    while (val.stockID in doc.stocks);
+    configObj[`stocks.${val.stockID}`] = {
       name: val.name,
       cashCounters: { main: { name: "main" } },
     };
-  } else configObj[`stocks.${val.stockId}.name`] = val.name;
-  return [val.stockId, configObj];
+  } else configObj[`stocks.${val.stockID}.name`] = val.name;
+  return [val.stockID, configObj];
 }
 
 export function setCashCounter(
-  val: { name: string; stockID: string; cashCounterId?: string },
+  val: { name: string; stockID: string; cashCounterID?: string },
   doc: _this,
   configObj: obj = {}
 ): [string, obj] {
-  if (val.cashCounterId === undefined) {
+  if (val.cashCounterID === undefined) {
     const stockConfig = doc.stocks[val.stockID];
-    do val.cashCounterId = randomStr();
-    while (val.cashCounterId in stockConfig.cashCounters);
-    configObj[`stocks.${val.stockID}.cashCounters.${val.cashCounterId}`] = {
+    do val.cashCounterID = randomStr();
+    while (val.cashCounterID in stockConfig.cashCounters);
+    configObj[`stocks.${val.stockID}.cashCounters.${val.cashCounterID}`] = {
       name: val.name,
     };
   } else
-    configObj[`stocks.${val.stockID}.cashCounters.${val.cashCounterId}.name`] =
+    configObj[`stocks.${val.stockID}.cashCounters.${val.cashCounterID}.name`] =
       val.name;
-  return [val.cashCounterId, configObj];
+  return [val.cashCounterID, configObj];
 }

@@ -19,7 +19,7 @@ const itemChangesS = isInterfaceAs({
 const sendReqS = isInterfaceAs({
   type: isString,
   stockID: isString,
-  sendToStockID: isString,
+  sendTostockID: isString,
   changes: isListOf(itemChangesS),
 });
 const reciveReqS = isInterfaceAs({
@@ -59,7 +59,7 @@ export default async function TransferStock(
         sendTransfer(
           doc,
           user.val.uid,
-          { to: data.sendToStockID, from: data.stockID },
+          { to: data.sendTostockID, from: data.stockID },
           returnVal,
           data.changes,
           updateDoc,
@@ -74,7 +74,7 @@ export default async function TransferStock(
         updateDoc: updateDoc,
         commits: {
           ignore: data.type !== "send",
-          path: paths.stock((data as any).sendToStockID),
+          path: paths.stock((data as any).sendTostockID),
           type: "update",
           obj: otherStockDoc,
         },

@@ -13,10 +13,10 @@ import { AuthorizationLevelErr, IncorrectReqErr } from "../utility/res";
 import { paths, setDoc } from "../utility/firestore";
 import { setUser } from "../documents/config";
 
-const managerS = isInterfaceAs({ role: isString, stockId: isString });
+const managerS = isInterfaceAs({ role: isString, stockID: isString });
 const accountentS = isInterfaceAs({
   role: isString,
-  stockId: isString,
+  stockID: isString,
   cashCounter: isString,
 });
 const reqS = isInterfaceAs({

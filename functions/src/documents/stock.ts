@@ -76,11 +76,11 @@ export function sendTransfer(
 }
 export function acceptTransfer(
   doc: _this,
-  uniqueId: string,
+  uniqueID: string,
   uid: string,
   stockDoc: obj = {}
 ) {
-  const transferData = doc.transferNotifications[uniqueId];
+  const transferData = doc.transferNotifications[uniqueID];
   let changes: stockChanges.inSendTransfer;
   const stockChanges: stockChanges.inDoc[] = [];
   for (changes of transferData.sC) {

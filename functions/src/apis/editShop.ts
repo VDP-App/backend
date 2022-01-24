@@ -17,7 +17,7 @@ const editS = combine(commonS, isInterfaceAs({ stockID: isString }));
 const createC = combine(commonS, isInterfaceAs({ stockID: isString }));
 const editC = combine(
   commonS,
-  isInterfaceAs({ stockID: isString, cashCounterId: isString })
+  isInterfaceAs({ stockID: isString, cashCounterID: isString })
 );
 const editN = combine(commonS, isInterfaceAs({ uid: isString }));
 
@@ -76,7 +76,7 @@ export default async function EditShop(
             obj: InitCashCounter(),
           });
         } else {
-          if (data.cashCounterId in doc.stocks[data.stockID].cashCounters) {
+          if (data.cashCounterID in doc.stocks[data.stockID].cashCounters) {
             [returnVal] = setCashCounter(data, doc, docChanges);
           } else {
             returnVal = "";

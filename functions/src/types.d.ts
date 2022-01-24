@@ -36,8 +36,8 @@ declare global {
   type applyClaim =
     | undefined
     | { role: "admin" }
-    | { role: "manager"; stockId: string }
-    | { role: "accountent"; stockId: string; cashCounter: string };
+    | { role: "manager"; stockID: string }
+    | { role: "accountent"; stockID: string; cashCounter: string };
   interface item {
     cgst: number;
     code: string;
@@ -116,9 +116,9 @@ declare global {
     }
     interface config_config {
       stocks: {
-        [stockId: string]: {
+        [stockID: string]: {
           name: string;
-          cashCounters: { [cashCounterId: string]: { name: string } };
+          cashCounters: { [cashCounterID: string]: { name: string } };
         };
       };
       users: {
@@ -129,13 +129,13 @@ declare global {
       entry: entry[];
       currentStocks: { [itemID: string]: number | undefined };
       transferNotifications: {
-        [uniqueId: string]: {
+        [uniqueID: string]: {
           sC: stockChanges.inSendTransfer[]; //? stockChanges
           tF: string; //? transferFrom
           sUid: string;
         };
       };
-      // ! uniqueId == stockId_date_entryNum
+      // ! uniqueID == stockID_date_entryNum
     }
     interface cashCounter {
       bills: { [billNum: string]: bill };
@@ -172,7 +172,7 @@ declare global {
       | { type: "createStock" }
       | { type: "editStock"; stockID: string }
       | { type: "createCashCounter"; stockID: string }
-      | { type: "editCashCounter"; stockID: string; cashCounterId: string }
+      | { type: "editCashCounter"; stockID: string; cashCounterID: string }
       | { type: "editName"; uid: string }
     );
 
@@ -194,7 +194,7 @@ declare global {
       | {
           type: "send";
           stockID: string;
-          sendToStockID: string;
+          sendTostockID: string;
           changes: stockChanges.inSendTransfer[];
         }
       | { type: "recive"; uniqueID: string; stockID: string };

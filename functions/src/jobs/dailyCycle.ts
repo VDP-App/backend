@@ -17,37 +17,37 @@ export default async function DailyCycle(context: bgFn.schedule.context) {
     const stockDocReset = { entry: [] },
       cashCounterReset = InitCashCounter(),
       commits: completeCommit[] = [];
-    let stockId: string,
-      cashCounterIds: string[],
-      cashCounterId: string,
+    let stockID: string,
+      cashCounterIDs: string[],
+      cashCounterID: string,
       stockDoc: documents.stock,
       counterDoc: documents.cashCounter,
       counterDocs: typeof counterDoc[];
 
-    for (stockId in configDoc) {
-      if (Object.prototype.hasOwnProperty.call(configDoc, stockId)) {
-        cashCounterIds = Object.keys(configDoc[stockId].cashCounters).map((x) =>
-          paths.cashCounter(stockId, x)
+    for (stockID in configDoc) {
+      if (Object.prototype.hasOwnProperty.call(configDoc, stockID)) {
+        cashCounterIDs = Object.keys(configDoc[stockID].cashCounters).map((x) =>
+          paths.cashCounter(stockID, x)
         );
         [stockDoc, ...counterDocs] = await getDocs([
-          paths.stock(stockId),
-          ...cashCounterIds,
+          paths.stock(stockID),
+          ...cashCounterIDs,
         ]);
         commits.push({
           type: "update",
-          path: paths.stock(stockId),
+          path: paths.stock(stockID),
           obj: stockDocReset,
         });
-        for (cashCounterId of cashCounterIds) {
+        for (cashCounterID of cashCounterIDs) {
           commits.push({
             type: "set",
-            path: paths.cashCounter(stockId, cashCounterId),
+            path: paths.cashCounter(stockID, cashCounterID),
             obj: cashCounterReset,
           });
         }
         commits.push({
           type: "create",
-          path: paths.summery(stockId, currentDate()),
+          path: paths.summery(stockID, currentDate()),
           obj: createSummery(stockDoc, counterDocs),
         });
       }

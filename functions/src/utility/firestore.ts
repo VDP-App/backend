@@ -12,8 +12,8 @@ export const paths = {
   stock: (stockID: string) => `stocks/${stockID}`,
   cashCounter: (stockID: string, cashCounterID: string) =>
     `stocks/${stockID}/cashCounters/${cashCounterID}`,
-  summery: (stockId: string, date: string) =>
-    `stocks/${stockId}/summery/${date}`,
+  summery: (stockID: string, date: string) =>
+    `stocks/${stockID}/summery/${date}`,
 };
 
 export function getDoc<T>(docPath: string) {
@@ -42,12 +42,15 @@ export function runBatch(...commits: commit[]) {
 
 export async function runTransaction<T, R = null>(
   docPath: string,
-  processDoc: (docs: T) => LikePromise<{
-    commits?: commit[] | commit;
-    updateDoc?: obj;
-    returnVal: R;
-    err?: undefined;
-  } | {err: err}>
+  processDoc: (docs: T) => LikePromise<
+    | {
+        commits?: commit[] | commit;
+        updateDoc?: obj;
+        returnVal: R;
+        err?: undefined;
+      }
+    | { err: err }
+  >
 ): Res<R> {
   const x_1 = await db
     .runTransaction<res<R>>(async function (transaction) {
