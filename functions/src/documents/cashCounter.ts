@@ -24,7 +24,7 @@ export function addBill(
     if (Math.abs(e.r - x) > 1100) e.r = x;
     totalMoney += e.a;
   }
-  if (bill.inC) {
+  if (!bill.inC) {
     cashCounterObj["income.online"] = fsValue.increment(bill.mG);
     cashCounterObj["income.offline"] = fsValue.increment(totalMoney - bill.mG);
   } else cashCounterObj["income.offline"] = fsValue.increment(totalMoney);

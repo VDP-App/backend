@@ -18,39 +18,37 @@ export default async function DailyCycle(context: bgFn.schedule.context) {
       cashCounterReset = InitCashCounter(),
       commits: completeCommit[] = [];
     let stockID: string,
-      cashCounterIDs: string[],
-      cashCounterID: string,
+      cashCounterPaths: string[],
+      cashCounterPath: string,
       stockDoc: documents.stock,
       counterDoc: documents.cashCounter,
       counterDocs: typeof counterDoc[];
 
-    for (stockID in configDoc) {
-      if (Object.prototype.hasOwnProperty.call(configDoc, stockID)) {
-        cashCounterIDs = Object.keys(configDoc[stockID].cashCounters).map((x) =>
-          paths.cashCounter(stockID, x)
-        );
-        [stockDoc, ...counterDocs] = await getDocs([
-          paths.stock(stockID),
-          ...cashCounterIDs,
-        ]);
+    for (stockID of Object.keys(configDoc)) {
+      cashCounterPaths = Object.keys(configDoc[stockID].cashCounters).map((x) =>
+        paths.cashCounter(stockID, x)
+      );
+      [stockDoc, ...counterDocs] = await getDocs([
+        paths.stock(stockID),
+        ...cashCounterPaths,
+      ]);
+      commits.push({
+        type: "update",
+        path: paths.stock(stockID),
+        obj: stockDocReset,
+      });
+      for (cashCounterPath of cashCounterPaths) {
         commits.push({
-          type: "update",
-          path: paths.stock(stockID),
-          obj: stockDocReset,
-        });
-        for (cashCounterID of cashCounterIDs) {
-          commits.push({
-            type: "set",
-            path: paths.cashCounter(stockID, cashCounterID),
-            obj: cashCounterReset,
-          });
-        }
-        commits.push({
-          type: "create",
-          path: paths.summery(stockID, currentDate()),
-          obj: createSummery(stockDoc, counterDocs),
+          type: "set",
+          path: cashCounterPath,
+          obj: cashCounterReset,
         });
       }
+      commits.push({
+        type: "create",
+        path: paths.summery(stockID, currentDate()),
+        obj: createSummery(stockDoc, counterDocs),
+      });
     }
     return commits;
   });
