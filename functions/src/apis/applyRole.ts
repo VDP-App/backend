@@ -10,14 +10,14 @@ import {
 import { checkAuth, checkPermission } from "../middlewere";
 import { applyClaims, getClaims, getUserByEmail } from "../utility/auth";
 import { AuthorizationLevelErr, IncorrectReqErr } from "../utility/res";
-import { paths, setDoc } from "../utility/firestore";
+import { paths, updateDoc } from "../utility/firestore";
 import { setUser } from "../documents/config";
 
 const managerS = isInterfaceAs({ role: isString, stockID: isString });
 const accountentS = isInterfaceAs({
   role: isString,
   stockID: isString,
-  cashCounter: isString,
+  cashCounterID: isString,
 });
 const reqS = isInterfaceAs({
   email: checkIfIt(isString, isEmail),
@@ -37,7 +37,7 @@ export default async function ApplyRole(
   if (cleanData.err) return { err: true, val: IncorrectReqErr };
   data = cleanData.val;
 
-  const claim = data.applyClaim;
+  const claim = data.applyClaims;
   if (claim?.role === "admin") return err;
 
   const user = await checkAuth(context);
@@ -58,11 +58,10 @@ export default async function ApplyRole(
       { email: data.email, name: data.name, claim: getClaims(claim) },
       configObj
     );
-  } else if (otherUser.val.customClaims) {
-    setUser(otherUser.val.uid, undefined, configObj);
-  }
+  } else setUser(otherUser.val.uid, undefined, configObj);
 
-  await applyClaims(otherUser.val.uid, claim);
+  const res = await applyClaims(otherUser.val.uid, claim);
+  if (res.err) return res;
 
-  return await setDoc(paths.config, "update", configObj);
+  return await updateDoc(paths.config, configObj);
 }

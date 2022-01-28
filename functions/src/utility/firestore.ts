@@ -23,10 +23,10 @@ export function getDoc<T>(docPath: string) {
     .future((x) => x.data() as any as undefined | T);
 }
 
-export function setDoc(docPath: string, type: "create" | "update", obj: obj) {
+export function updateDoc(docPath: string, obj: obj) {
   return db
     .doc(docPath)
-    [type](obj)
+    .update(obj)
     .future(() => null);
 }
 

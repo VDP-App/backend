@@ -1,6 +1,6 @@
 import { setUser } from "../documents/config";
 import { applyClaims, getClaims, getUser } from "../utility/auth";
-import { setDoc, paths as fsPaths } from "../utility/firestore";
+import { updateDoc, paths as fsPaths } from "../utility/firestore";
 import { paths, setObj } from "../utility/realtime";
 
 export default async function AdminRole(
@@ -53,7 +53,7 @@ export default async function AdminRole(
         claim: getClaims(claim),
       });
 
-      setDoc(fsPaths.config, "update", configObj);
+      updateDoc(fsPaths.config, configObj);
 
       const res = await applyClaims(uid, claim);
       if (res.err)

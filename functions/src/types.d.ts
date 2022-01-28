@@ -37,7 +37,7 @@ declare global {
     | undefined
     | { role: "admin" }
     | { role: "manager"; stockID: string }
-    | { role: "accountent"; stockID: string; cashCounter: string };
+    | { role: "accountent"; stockID: string; cashCounterID: string };
   interface item {
     cgst: number;
     code: string;
@@ -165,7 +165,7 @@ declare global {
     }
     interface ApplyRole {
       email: string;
-      applyClaim: applyClaim;
+      applyClaims: applyClaim;
       name: string;
     }
     type EditShop = { name: string } & (

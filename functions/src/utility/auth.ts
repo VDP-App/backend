@@ -6,7 +6,7 @@ export function applyClaims(uid: string, claims: applyClaim) {
     if (claims.role === "admin") claimObj = { r: 0 };
     else if (claims.role === "manager") claimObj = { r: 1, s: claims.stockID };
     else if (claims.role === "accountent")
-      claimObj = { r: 2, s: claims.stockID, c: claims.cashCounter };
+      claimObj = { r: 2, s: claims.stockID, c: claims.cashCounterID };
   }
   return app.auth().setCustomUserClaims(uid, claimObj).future();
 }
@@ -16,7 +16,7 @@ export function getClaims(claims: applyClaim): claim | null {
   if (claims.role === "admin") return { r: 0 };
   else if (claims.role === "manager") return { r: 1, s: claims.stockID };
   else if (claims.role === "accountent")
-    return { r: 2, s: claims.stockID, c: claims.cashCounter };
+    return { r: 2, s: claims.stockID, c: claims.cashCounterID };
   return null;
 }
 
