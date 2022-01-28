@@ -62,7 +62,7 @@ export default async function ApplyRole(
     setUser(otherUser.val.uid, undefined, configObj);
   }
 
-  await applyClaims(data.email, claim);
+  await applyClaims(otherUser.val.uid, claim);
 
   return await setDoc(paths.config, "update", configObj);
 }
