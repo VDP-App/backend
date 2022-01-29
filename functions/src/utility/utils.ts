@@ -15,6 +15,10 @@ export function DateObj() {
   return date;
 }
 
+export function currentTime() {
+  return DateObj().toISOString();
+}
+
 export function currentDate() {
   return DateObj().toISOString().split("T")[0];
 }

@@ -1,4 +1,5 @@
 import { fsValue } from "../utility/firestore";
+import { currentTime } from "../utility/utils";
 
 export function logAddItem(
   itemId: string,
@@ -8,7 +9,7 @@ export function logAddItem(
   logsObj: obj = {}
 ) {
   logsObj["logs"] = fsValue.arrayUnion({
-    createdAt: Date(),
+    createdAt: currentTime(),
     createdBy: uid,
     item,
     itemId,
@@ -25,7 +26,7 @@ export function logRemoveItem(
   logsObj: obj = {}
 ) {
   logsObj["logs"] = fsValue.arrayUnion({
-    createdAt: Date(),
+    createdAt: currentTime(),
     createdBy: uid,
     item,
     itemId,
@@ -42,7 +43,7 @@ export function logUpdateItem(
   logsObj: obj = {}
 ) {
   logsObj["logs"] = fsValue.arrayUnion({
-    createdAt: Date(),
+    createdAt: currentTime(),
     createdBy: uid,
     item,
     itemId,
