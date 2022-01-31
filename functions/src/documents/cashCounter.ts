@@ -40,14 +40,16 @@ export function cancleBill(
   stockObj: obj = {}
 ): [bill | undefined, obj, obj] {
   let bill: bill | undefined;
+  const newBills: bill[] = [];
   for (var b of doc.bills) {
     if (b.n == billNum) {
       bill = b;
       break;
     }
+    newBills.push(b);
   }
   if (!bill) return [undefined, cashCounterObj, stockObj];
-  cashCounterObj[`bills.${billNum}`] = fsValue.delete();
+  cashCounterObj[`bills`] = newBills;
   let totalMoney = 0,
     e: order;
   for (e of bill.o) {
