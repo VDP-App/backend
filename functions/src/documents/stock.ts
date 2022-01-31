@@ -97,4 +97,6 @@ export function acceptTransfer(
     uid,
     sUid: transferData.sUid,
   });
+  stockDoc[uniqueID] = fsValue.delete();
+  return stockDoc;
 }

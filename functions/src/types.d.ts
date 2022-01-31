@@ -59,6 +59,7 @@ declare global {
     mG: number; //? moneyGiven
     o: order[]; //? orders
     uid: string;
+    n: string | number; //? bill number
   }
   namespace stockChanges {
     interface inDoc {
@@ -138,7 +139,7 @@ declare global {
       // ! uniqueID == stockID_date_entryNum
     }
     interface cashCounter {
-      bills: { [billNum: string]: bill };
+      bills: bill[];
       income: { online: number; offline: number };
     }
     interface summery {

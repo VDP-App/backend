@@ -11,7 +11,7 @@ export function createSummery(
   };
   let cashCounterDoc: documents.cashCounter;
   for (cashCounterDoc of cashCounterDocs) {
-    doc.bills.push(...Object.values(cashCounterDoc.bills));
+    doc.bills.push(...cashCounterDoc.bills);
   }
   return doc;
 }

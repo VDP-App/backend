@@ -4,7 +4,7 @@ type _this = documents.cashCounter;
 
 export function InitCashCounter(): documents.cashCounter {
   return {
-    bills: {},
+    bills: [],
     income: { online: 0, offline: 0 },
   };
 }
@@ -15,6 +15,7 @@ export function addBill(
   cashCounterObj: obj = {},
   stockObj: obj = {}
 ) {
+  bill.n = billNum;
   let totalMoney = 0,
     e: order,
     x: number;
@@ -28,8 +29,7 @@ export function addBill(
     cashCounterObj["income.online"] = fsValue.increment(bill.mG);
     cashCounterObj["income.offline"] = fsValue.increment(totalMoney - bill.mG);
   } else cashCounterObj["income.offline"] = fsValue.increment(totalMoney);
-  cashCounterObj[`bills.${billNum}`] = bill;
-
+  cashCounterObj.bills = fsValue.arrayUnion(bill);
   return [cashCounterObj, stockObj];
 }
 
@@ -38,9 +38,15 @@ export function cancleBill(
   billNum: string | number,
   cashCounterObj: obj = {},
   stockObj: obj = {}
-): [boolean, obj, obj] {
-  const bill = doc.bills[billNum];
-  if (!bill) return [false, cashCounterObj, stockObj];
+): [bill | undefined, obj, obj] {
+  let bill: bill | undefined;
+  for (var b of doc.bills) {
+    if (b.n == billNum) {
+      bill = b;
+      break;
+    }
+  }
+  if (!bill) return [undefined, cashCounterObj, stockObj];
   cashCounterObj[`bills.${billNum}`] = fsValue.delete();
   let totalMoney = 0,
     e: order;
@@ -54,5 +60,5 @@ export function cancleBill(
     cashCounterObj[`income.online`] = fsValue.increment(-bill.mG);
     cashCounterObj[`income.offline`] = fsValue.increment(bill.mG - totalMoney);
   }
-  return [true, cashCounterObj, stockObj];
+  return [bill, cashCounterObj, stockObj];
 }
