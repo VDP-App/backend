@@ -102,7 +102,11 @@ declare global {
     itemId: string;
     createdAt: string;
     createdBy: string;
-  } & ({ type: "create" | "remove" } | { type: "update"; oldItem: item });
+  } & (
+    | { type: "create" }
+    | { type: "update"; oldItem: item }
+    | { type: "remove"; remainingStock: { [stockID: string]: number } }
+  );
   namespace documents {
     interface logs {
       logs: log[];

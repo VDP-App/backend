@@ -21,7 +21,7 @@ export function addBill(
     x: number;
   for (e of bill.o) {
     stockObj[`currentStocks.${e.iId}`] = fsValue.increment(-e.q);
-    x = Math.floor((e.q * 1000) / e.a);
+    x = Math.floor((e.a * 1000) / e.q);
     if (Math.abs(e.r - x) > 1100) e.r = x;
     totalMoney += e.a;
   }
@@ -42,10 +42,7 @@ export function cancleBill(
   let bill: bill | undefined;
   const newBills: bill[] = [];
   for (var b of doc.bills) {
-    if (b.n == billNum) {
-      bill = b;
-      break;
-    }
+    if (b.n == billNum) bill = b;
     newBills.push(b);
   }
   if (!bill) return [undefined, cashCounterObj, stockObj];

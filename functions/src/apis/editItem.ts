@@ -1,8 +1,14 @@
 import { isInterfaceAs, isString, is, sanitizeJson } from "sanitize-json";
 import { logAddItem, logRemoveItem, logUpdateItem } from "../documents/logs";
 import { addItem, removeItem, updateItem } from "../documents/products";
+import { RemoveItem } from "../documents/stock";
 import { checkAuth, checkPermission } from "../middlewere";
-import { paths, runTransaction } from "../utility/firestore";
+import {
+  getDoc,
+  paths,
+  runTransaction,
+  runTransactionComplete,
+} from "../utility/firestore";
 import { IncorrectReqErr } from "../utility/res";
 import { isValidNumS } from "./billing";
 
@@ -35,41 +41,79 @@ export default async function EditItem(
   const permissionErr = checkPermission(user.val, "manager");
   if (permissionErr.err) return permissionErr;
 
-  return await runTransaction(
-    paths.products,
-    function (doc: documents.config_products) {
-      let page: number;
-      let isPageNew: boolean;
-
-      const productObj: obj = {};
-
-      const logObj: obj = {};
-
-      if (data.type === "remove") {
-        [isPageNew, page] = removeItem(doc, data.id, productObj);
-        logRemoveItem(data.id, user.val.uid, data.item, doc, logObj);
-      } else if (data.type === "create") {
-        [isPageNew, page, data.id] = addItem(
-          doc,
-          data.id,
-          data.item,
-          productObj
-        );
-        logAddItem(data.id, user.val.uid, data.item, doc, logObj);
-      } else {
-        [isPageNew, page] = updateItem(doc, data.id, data.item, productObj);
-        logUpdateItem(data.id, user.val.uid, data.item, doc, logObj);
+  if (data.type === "remove") {
+    const config = await getDoc<documents.config_config>(paths.config);
+    if (config.err) return config;
+    const stockIDs = Object.keys(config.val?.stocks ?? {});
+    const stockPaths = stockIDs.map((x) => paths.stock(x));
+    runTransactionComplete(
+      [paths.products, ...stockPaths],
+      ([doc, ...stockDocs]) => {
+        const [isPageNew, page, productObj] = removeItem(doc, data.id);
+        const commits: completeCommit[] = [
+          {
+            type: "update",
+            path: paths.products,
+            obj: productObj,
+          },
+          {
+            type: isPageNew ? "create" : "update",
+            path: paths.logs(page),
+            obj: logRemoveItem(
+              data.id,
+              user.val.uid,
+              data.item,
+              doc,
+              stockIDs,
+              stockDocs
+            ),
+          },
+        ];
+        const updateStockObj = RemoveItem(data.id);
+        for (const stockPath of stockPaths) {
+          commits.push({
+            type: "update",
+            path: stockPath,
+            obj: updateStockObj,
+          });
+        }
+        return commits;
       }
+    );
+    return null as any;
+  } else
+    return await runTransaction(
+      paths.products,
+      function (doc: documents.config_products) {
+        let page: number;
+        let isPageNew: boolean;
 
-      return {
-        updateDoc: productObj,
-        commits: {
-          type: isPageNew ? "create" : "update",
-          path: paths.logs(page),
-          obj: logObj,
-        },
-        returnVal: data,
-      };
-    }
-  );
+        const productObj: obj = {};
+
+        const logObj: obj = {};
+
+        if (data.type === "create") {
+          [isPageNew, page, data.id] = addItem(
+            doc,
+            data.id,
+            data.item,
+            productObj
+          );
+          logAddItem(data.id, user.val.uid, data.item, doc, logObj);
+        } else {
+          [isPageNew, page] = updateItem(doc, data.id, data.item, productObj);
+          logUpdateItem(data.id, user.val.uid, data.item, doc, logObj);
+        }
+
+        return {
+          updateDoc: productObj,
+          commits: {
+            type: isPageNew ? "create" : "update",
+            path: paths.logs(page),
+            obj: logObj,
+          },
+          returnVal: data,
+        };
+      }
+    );
 }

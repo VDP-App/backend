@@ -14,6 +14,10 @@ export function ResetStock() {
   return { entry: [] };
 }
 
+export function RemoveItem(itemID: string) {
+  return { [`currentStocks.${itemID}`]: fsValue.delete() };
+}
+
 export function addEntry(
   doc: _this,
   uid: string,

@@ -23,15 +23,21 @@ export function logRemoveItem(
   uid: string,
   item: item,
   doc: documents.config_products,
+  stockIDs: string[],
+  stockDocs: documents.stock[],
   logsObj: obj = {}
-) {
-  logsObj["logs"] = fsValue.arrayUnion({
+): obj {
+  const log: log = {
     createdAt: currentTime(),
     createdBy: uid,
     item,
     itemId,
     type: "remove",
-  });
+    remainingStock: {},
+  };
+  for (let i = 0; i < stockIDs.length; i++)
+    log.remainingStock[stockIDs[i]] = stockDocs[i].currentStocks[itemId] ?? 0;
+  logsObj["logs"] = fsValue.arrayUnion(log);
   logsObj.createItem = fsValue.arrayUnion(doc.log.count);
   return logsObj;
 }

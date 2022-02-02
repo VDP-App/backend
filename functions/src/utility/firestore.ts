@@ -76,22 +76,19 @@ export async function runTransaction<T, R = null>(
 }
 
 export async function runTransactionComplete(
-  processDoc: (
-    getDocs: (paths: string[]) => Promise<any[]>
-  ) => Promise<completeCommit[]>
+  paths: string[],
+  processDoc: (docs: any[]) => completeCommit[]
 ): Res<null> {
   const x_1 = await db
     .runTransaction<res<null>>(async function (transaction) {
       const refs: firestore.DocumentReference<firestore.DocumentData>[] = [];
-      const commits = await processDoc(async function (paths) {
-        let path: string;
-        for (path of paths) refs.push(db.doc(path));
-        const x = await transaction.getAll(...refs);
-        const y: any[] = [];
-        let doc: firestore.DocumentSnapshot<firestore.DocumentData>;
-        for (doc of x) y.push(doc.data());
-        return y;
-      });
+      let path: string;
+      for (path of paths) refs.push(db.doc(path));
+      const x = await transaction.getAll(...refs);
+      const y: any[] = [];
+      let doc: firestore.DocumentSnapshot<firestore.DocumentData>;
+      for (doc of x) y.push(doc.data());
+      const commits = processDoc(y);
       if (commits) {
         let commit: completeCommit;
         for (commit of commits) {
