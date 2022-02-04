@@ -32,6 +32,7 @@ export function addEntry(
         n: changes.val,
         iId: changes.iId,
         i: changes.val - (doc.currentStocks[changes.iId] ?? 0),
+        t: "set",
       });
       stockObj[`currentStocks.${changes.iId}`] = changes.val;
     } else {
@@ -39,6 +40,7 @@ export function addEntry(
         i: changes.val,
         iId: changes.iId,
         n: changes.val + (doc.currentStocks[changes.iId] ?? 0),
+        t: "inc",
       });
       stockObj[`currentStocks.${changes.iId}`] = fsValue.increment(changes.val);
     }

@@ -43,7 +43,7 @@ export function cancleBill(
   const newBills: bill[] = [];
   for (var b of doc.bills) {
     if (b.n == billNum) bill = b;
-    newBills.push(b);
+    else newBills.push(b);
   }
   if (!bill) return [undefined, cashCounterObj, stockObj];
   cashCounterObj[`bills`] = newBills;

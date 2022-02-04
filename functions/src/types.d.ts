@@ -66,6 +66,7 @@ declare global {
       iId: string; //? itemId
       n: number; //? now
       i: number; //? increment
+      t?: "set" | "inc"; //? type
     }
     interface inReq {
       iId: string; //? itemId
