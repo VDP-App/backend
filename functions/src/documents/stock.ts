@@ -97,7 +97,7 @@ export function acceptTransfer(
     stockChanges.push({
       i: changes.send,
       iId: changes.iId,
-      n: (doc.currentStocks[changes.iId] ?? 0) - changes.send,
+      n: (doc.currentStocks[changes.iId] ?? 0) + changes.send,
     });
     stockDoc[`currentStocks.${changes.iId}`] = fsValue.increment(changes.send);
   }
