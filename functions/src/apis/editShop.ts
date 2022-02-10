@@ -47,7 +47,7 @@ export default async function EditShop(
 
   return await runTransaction(
     paths.config,
-    function (doc: documents.config_config) {
+    function (doc: documents.raw.config_config) {
       const docChanges: obj = {};
       const commits: commit[] = [];
       let returnVal: string;

@@ -5,26 +5,24 @@ export function logAddItem(
   itemId: string,
   uid: string,
   item: item,
-  doc: documents.config_products,
   logsObj: obj = {}
 ) {
-  logsObj["logs"] = fsValue.arrayUnion({
+  const log: log = {
     createdAt: currentTime(),
     createdBy: uid,
     item,
     itemId,
     type: "create",
-  });
-  logsObj.createItem = fsValue.arrayUnion(doc.log.count);
+  };
+  logsObj["logs"] = fsValue.arrayUnion(JSON.stringify(log));
   return logsObj;
 }
 export function logRemoveItem(
   itemId: string,
   uid: string,
   item: item,
-  doc: documents.config_products,
   stockIDs: string[],
-  stockDocs: documents.stock[],
+  stockDocs: documents.raw.stock[],
   logsObj: obj = {}
 ): obj {
   const log: log = {
@@ -37,25 +35,24 @@ export function logRemoveItem(
   };
   for (let i = 0; i < stockIDs.length; i++)
     log.remainingStock[stockIDs[i]] = stockDocs[i].currentStocks[itemId] ?? 0;
-  logsObj["logs"] = fsValue.arrayUnion(log);
-  logsObj.createItem = fsValue.arrayUnion(doc.log.count);
+  logsObj["logs"] = fsValue.arrayUnion(JSON.stringify(log));
   return logsObj;
 }
 export function logUpdateItem(
   itemId: string,
   uid: string,
   item: item,
-  doc: documents.config_products,
+  doc: documents.raw.config_products,
   logsObj: obj = {}
 ) {
-  logsObj["logs"] = fsValue.arrayUnion({
+  const log: log = {
     createdAt: currentTime(),
     createdBy: uid,
     item,
     itemId,
     type: "update",
     oldItem: doc.items[itemId],
-  });
-  logsObj.createItem = fsValue.arrayUnion(doc.log.count);
+  };
+  logsObj["logs"] = fsValue.arrayUnion(JSON.stringify(log));
   return logsObj;
 }

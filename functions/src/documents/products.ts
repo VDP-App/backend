@@ -1,7 +1,7 @@
 import { fsValue } from "../utility/firestore";
 import { randomStr } from "../utility/utils";
 
-type _this = documents.config_products;
+type _this = documents.raw.config_products;
 
 const MaxLogCount = 100;
 

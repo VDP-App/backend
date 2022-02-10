@@ -1,6 +1,6 @@
 import { fsValue } from "../utility/firestore";
 
-type _this = documents.stock;
+type _this = documents.raw.stock;
 
 export function InitStock(): _this {
   return {
@@ -45,7 +45,7 @@ export function addEntry(
       stockObj[`currentStocks.${changes.iId}`] = fsValue.increment(changes.val);
     }
   }
-  stockObj.entry = fsValue.arrayUnion({ sC, uid });
+  stockObj.entry = fsValue.arrayUnion(JSON.stringify({ sC, uid }));
   return stockObj;
 }
 
@@ -68,16 +68,18 @@ export function sendTransfer(
     });
     stockObj[`currentStocks.${changes.iId}`] = fsValue.increment(-changes.send);
   }
-  stockObj.entry = fsValue.arrayUnion({
-    sC: stockChanges,
-    tT: send.to,
-    uid: uid,
-  });
-  otherStockDoc[`transferNotifications.${uniqueID}`] = {
+  stockObj.entry = fsValue.arrayUnion(
+    JSON.stringify({
+      sC: stockChanges,
+      tT: send.to,
+      uid: uid,
+    })
+  );
+  otherStockDoc[`transferNotifications.${uniqueID}`] = JSON.stringify({
     tF: send.from,
     sC: reqChanges,
     sUid: uid,
-  };
+  });
   return [stockObj, otherStockDoc];
 }
 export function acceptTransfer(
@@ -86,7 +88,9 @@ export function acceptTransfer(
   uid: string,
   stockDoc: obj = {}
 ) {
-  const transferData = doc.transferNotifications[uniqueID];
+  const transferData: transferReq = JSON.parse(
+    doc.transferNotifications[uniqueID]
+  );
   let changes: stockChanges.inSendTransfer;
   const stockChanges: stockChanges.inDoc[] = [];
   for (changes of transferData.sC) {
@@ -97,12 +101,14 @@ export function acceptTransfer(
     });
     stockDoc[`currentStocks.${changes.iId}`] = fsValue.increment(changes.send);
   }
-  stockDoc.entry = fsValue.arrayUnion({
-    sC: stockChanges,
-    tF: transferData.tF,
-    uid,
-    sUid: transferData.sUid,
-  });
+  stockDoc.entry = fsValue.arrayUnion(
+    JSON.stringify({
+      sC: stockChanges,
+      tF: transferData.tF,
+      uid,
+      sUid: transferData.sUid,
+    })
+  );
   stockDoc[`transferNotifications.${uniqueID}`] = fsValue.delete();
   return stockDoc;
 }

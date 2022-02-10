@@ -63,7 +63,6 @@ export default async function EditItem(
               data.id,
               user.val.uid,
               data.item,
-              doc,
               stockIDs,
               stockDocs
             ),
@@ -84,7 +83,7 @@ export default async function EditItem(
   } else
     return await runTransaction(
       paths.products,
-      function (doc: documents.config_products) {
+      function (doc: documents.raw.config_products) {
         let page: number;
         let isPageNew: boolean;
 
@@ -99,7 +98,7 @@ export default async function EditItem(
             data.item,
             productObj
           );
-          logAddItem(data.id, user.val.uid, data.item, doc, logObj);
+          logAddItem(data.id, user.val.uid, data.item, logObj);
         } else {
           [isPageNew, page] = updateItem(doc, data.id, data.item, productObj);
           logUpdateItem(data.id, user.val.uid, data.item, doc, logObj);

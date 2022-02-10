@@ -59,7 +59,11 @@ declare global {
     mG: number; //? moneyGiven
     o: order[]; //? orders
     uid: string;
-    n: string | number; //? bill number
+  }
+  interface transferReq {
+    sC: stockChanges.inSendTransfer[]; //? stockChanges
+    tF: string; //? transferFrom
+    sUid: string;
   }
   namespace stockChanges {
     interface inDoc {
@@ -111,46 +115,70 @@ declare global {
   namespace documents {
     interface logs {
       logs: log[];
-      createItem: number[];
-      removeItem: number[];
-      updateItem: number[];
     }
-    interface config_products {
-      log: { count: number; page: number };
-      ids: string[];
-      items: { [id: string]: item };
-    }
-    interface config_config {
-      stocks: {
-        [stockID: string]: {
-          name: string;
-          cashCounters: { [cashCounterID: string]: { name: string } };
-        };
-      };
-      users: {
-        [uid: string]: { email: string; name: string; claim: claim };
-      };
-    }
+    interface config_products extends raw.config_products {}
+    interface config_config extends raw.config_config {}
     interface stock {
       entry: entry[];
       currentStocks: { [itemID: string]: number | undefined };
-      transferNotifications: {
-        [uniqueID: string]: {
-          sC: stockChanges.inSendTransfer[]; //? stockChanges
-          tF: string; //? transferFrom
-          sUid: string;
-        };
-      };
+      transferNotifications: { [uniqueID: string]: transferReq };
       // ! uniqueID == stockID_date_entryNum
     }
     interface cashCounter {
-      bills: bill[];
+      bills: { [billNum: string]: bill };
       income: { online: number; offline: number };
     }
     interface summery {
-      bills: bill[];
+      retail: {
+        [itemID: string]: {
+          r: number; // ? rate
+          q: number; // ? quntity
+        }[];
+      };
+      wholeSell: bill[];
       entry: entry[];
       stockSnapShot: { [itemId: string]: number | undefined };
+      income: { online: number; offline: number };
+    }
+    namespace raw {
+      interface logs {
+        logs: string[];
+      }
+      interface config_products {
+        log: { count: number; page: number };
+        ids: string[];
+        items: { [id: string]: item };
+      }
+      interface config_config {
+        stocks: {
+          [stockID: string]: {
+            name: string;
+            cashCounters: { [cashCounterID: string]: { name: string } };
+          };
+        };
+        users: {
+          [uid: string]: { email: string; name: string; claim: claim };
+        };
+      }
+      interface stock {
+        entry: string[];
+        currentStocks: { [itemID: string]: number | undefined };
+        transferNotifications: {
+          [uniqueID: string]: string;
+        };
+        // ! uniqueID == stockID_date_entryNum
+      }
+      interface cashCounter {
+        bills: { [billNum: string]: string };
+        income: { online: number; offline: number };
+      }
+      interface summery {
+        retail: string;
+        wholeSell: string;
+        entry: string;
+        stockSnapShot: string;
+        income: { online: number; offline: number };
+      }
     }
   }
   namespace bgFn {

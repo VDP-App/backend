@@ -1,10 +1,10 @@
 import { fsValue } from "../utility/firestore";
 
-type _this = documents.cashCounter;
+type _this = documents.raw.cashCounter;
 
-export function InitCashCounter(): documents.cashCounter {
+export function InitCashCounter(): documents.raw.cashCounter {
   return {
-    bills: [],
+    bills: {},
     income: { online: 0, offline: 0 },
   };
 }
@@ -15,7 +15,6 @@ export function addBill(
   cashCounterObj: obj = {},
   stockObj: obj = {}
 ) {
-  bill.n = billNum;
   let totalMoney = 0,
     e: order,
     x: number;
@@ -29,7 +28,7 @@ export function addBill(
     cashCounterObj["income.online"] = fsValue.increment(bill.mG);
     cashCounterObj["income.offline"] = fsValue.increment(totalMoney - bill.mG);
   } else cashCounterObj["income.offline"] = fsValue.increment(totalMoney);
-  cashCounterObj.bills = fsValue.arrayUnion(bill);
+  cashCounterObj.bills[billNum] = JSON.stringify(bill);
   return [cashCounterObj, stockObj];
 }
 
@@ -39,14 +38,9 @@ export function cancleBill(
   cashCounterObj: obj = {},
   stockObj: obj = {}
 ): [bill | undefined, obj, obj] {
-  let bill: bill | undefined;
-  const newBills: bill[] = [];
-  for (var b of doc.bills) {
-    if (b.n == billNum) bill = b;
-    else newBills.push(b);
-  }
+  const bill: bill = JSON.parse(doc.bills[billNum]);
   if (!bill) return [undefined, cashCounterObj, stockObj];
-  cashCounterObj[`bills`] = newBills;
+  cashCounterObj[`bills.${billNum}`] = fsValue.delete();
   let totalMoney = 0,
     e: order;
   for (e of bill.o) {

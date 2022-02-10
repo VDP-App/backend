@@ -1,7 +1,7 @@
 import { fsValue } from "../utility/firestore";
 import { randomStr } from "../utility/utils";
 
-export type _this = documents.config_config;
+export type _this = documents.raw.config_config;
 
 export function setUser(
   uid: string,

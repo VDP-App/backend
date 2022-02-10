@@ -54,7 +54,7 @@ export default async function Billing(
   const res1 = await runTransaction(
     rtPaths.cashCounterBillNum(data.stockID, data.cashCounterID),
     function (billNum: number) {
-      if (typeof billNum !== "number" || billNum < 1) billNum = 1;
+      if (typeof billNum !== "number" || billNum < 0) billNum = 0;
       return billNum + 1;
     }
   );

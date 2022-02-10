@@ -40,7 +40,7 @@ export default async function StockChanges(
 
   return await runTransaction(
     paths.stock(data.stockID),
-    function (doc: documents.stock) {
+    function (doc: documents.raw.stock) {
       const updateDoc: obj = addEntry(doc, user.val.uid, data.changes);
       return { returnVal: doc.entry.length + 1, updateDoc: updateDoc };
     }
