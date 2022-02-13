@@ -5,7 +5,7 @@ import ApplyRole from "./apis/applyRole";
 import AdminRole from "./jobs/adminRole";
 import Billing from "./apis/billing";
 import EditShop from "./apis/editShop";
-import CancleBill from "./apis/cancleBill";
+import CancleEntry from "./apis/cancleEntry";
 import StockChanges from "./apis/stockChanges";
 import TransferStock from "./apis/transferStock";
 import DailyCycle from "./jobs/dailyCycle";
@@ -32,6 +32,9 @@ exports.stockChanges = functions.https.onCall(StockChanges);
 exports.transferStock = functions.https.onCall(TransferStock);
 
 // cancle bills
-exports.cancleBill = functions.https.onCall(CancleBill);
+exports.cancleEntry = functions.https.onCall(CancleEntry);
 
-exports.cycle = functions.pubsub.schedule("0 2 * * *").onRun(DailyCycle);
+exports.cycle = functions.pubsub
+  .schedule("0 2 * * *")
+  .timeZone("Asia/Kolkata")
+  .onRun(DailyCycle);

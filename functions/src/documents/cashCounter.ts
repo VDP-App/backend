@@ -46,7 +46,7 @@ export function cancleBill(
   cashCounterObj: obj = {},
   stockObj: obj = {}
 ): [bill | undefined, obj, obj] {
-  const bill: bill = JSON.parse(doc.bills[billNum]);
+  const bill: bill = JSON.parse(doc.bills[billNum] ?? "null");
   if (!bill) return [undefined, cashCounterObj, stockObj];
   cashCounterObj[`bills.${billNum}`] = fsValue.delete();
   let totalMoney = 0,

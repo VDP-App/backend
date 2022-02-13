@@ -119,7 +119,8 @@ declare global {
     interface config_products extends raw.config_products {}
     interface config_config extends raw.config_config {}
     interface stock {
-      entry: entry[];
+      entryNum: number;
+      entry: { [entryNum: string]: entry };
       currentStocks: { [itemID: string]: number | undefined };
       transferNotifications: { [uniqueID: string]: transferReq };
       // ! uniqueID == stockID_date_entryNum
@@ -161,7 +162,8 @@ declare global {
         };
       }
       interface stock {
-        entry: string[];
+        entryNum: number;
+        entry: { [entryNum: string]: string };
         currentStocks: { [itemID: string]: number | undefined };
         transferNotifications: {
           [uniqueID: string]: string;
@@ -215,11 +217,14 @@ declare global {
       stockID: string;
       cashCounterID: string;
     }
-    interface CancleBill {
-      billNum: number | string;
-      stockID: string;
-      cashCounterID: string;
-    }
+    type CancleEntry =
+      | {
+          type: "bill";
+          num: number | string;
+          stockID: string;
+          cashCounterID: string;
+        }
+      | { type: "stockChanges"; num: number | string; stockID: string };
     interface StockChanges {
       stockID: string;
       changes: stockChanges.inReq[];

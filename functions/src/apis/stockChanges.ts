@@ -38,11 +38,11 @@ export default async function StockChanges(
   });
   if (permissionErr.err) return permissionErr;
 
-  return await runTransaction(
+  return await runTransaction<documents.raw.stock, number>(
     paths.stock(data.stockID),
-    function (doc: documents.raw.stock) {
+    function (doc) {
       const updateDoc: obj = addEntry(doc, user.val.uid, data.changes);
-      return { returnVal: doc.entry.length + 1, updateDoc: updateDoc };
+      return { returnVal: doc.entryNum + 1, updateDoc: updateDoc };
     }
   );
 }

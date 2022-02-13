@@ -4,9 +4,14 @@ function parseStockDoc(stockDoc: documents.raw.stock) {
   const returnDoc: documents.stock = {
     currentStocks: stockDoc.currentStocks,
     transferNotifications: {},
-    entry: [],
+    entry: {},
+    entryNum: stockDoc.entryNum,
   };
-  for (const entry of stockDoc.entry) returnDoc.entry.push(JSON.parse(entry));
+  for (const entryNum in stockDoc.entry) {
+    if (Object.prototype.hasOwnProperty.call(stockDoc.entry, entryNum)) {
+      returnDoc.entry[entryNum] = JSON.parse(stockDoc.entry[entryNum]);
+    }
+  }
   return returnDoc;
 }
 function parseCashCounterDocs(cashCounterDocs: documents.raw.cashCounter[]) {
@@ -36,7 +41,7 @@ export function createSummery(
   const doc: documents.summery = {
     retail: {},
     wholeSell: [],
-    entry: stockDoc.entry,
+    entry: Object.values(stockDoc.entry),
     stockSnapShot: stockDoc.currentStocks,
     income: { offline: 0, online: 0 },
   };

@@ -55,7 +55,7 @@ export default async function TransferStock(
       const otherStockDoc: obj = {};
       let returnVal: string | number;
       if (data.type === "send") {
-        returnVal = `${data.stockID}_${currentDate()}_${doc.entry.length + 1}`;
+        returnVal = `${data.stockID}_${currentDate()}_${doc.entryNum + 1}`;
         sendTransfer(
           doc,
           user.val.uid,
@@ -66,7 +66,7 @@ export default async function TransferStock(
           otherStockDoc
         );
       } else {
-        returnVal = doc.entry.length + 1;
+        returnVal = doc.entryNum + 1;
         acceptTransfer(doc, data.uniqueID, user.val.uid, updateDoc);
       }
       return {

@@ -4,14 +4,15 @@ type _this = documents.raw.stock;
 
 export function InitStock(): _this {
   return {
-    entry: [],
+    entryNum: 0,
+    entry: {},
     currentStocks: {},
     transferNotifications: {},
   };
 }
 
 export function ResetStock() {
-  return { entry: [] };
+  return { entry: [], entryNum: 0 };
 }
 
 export function RemoveItem(itemID: string) {
@@ -45,7 +46,8 @@ export function addEntry(
       stockObj[`currentStocks.${changes.iId}`] = fsValue.increment(changes.val);
     }
   }
-  stockObj.entry = fsValue.arrayUnion(JSON.stringify({ sC, uid }));
+  stockObj[`entry.${doc.entryNum + 1}`] = JSON.stringify({ sC, uid });
+  stockObj.entryNum = fsValue.increment(1);
   return stockObj;
 }
 
@@ -68,13 +70,12 @@ export function sendTransfer(
     });
     stockObj[`currentStocks.${changes.iId}`] = fsValue.increment(-changes.send);
   }
-  stockObj.entry = fsValue.arrayUnion(
-    JSON.stringify({
-      sC: stockChanges,
-      tT: send.to,
-      uid: uid,
-    })
-  );
+  stockObj[`entry.${doc.entryNum + 1}`] = JSON.stringify({
+    sC: stockChanges,
+    tT: send.to,
+    uid: uid,
+  });
+  stockObj.entryNum = fsValue.increment(1);
   otherStockDoc[`transferNotifications.${uniqueID}`] = JSON.stringify({
     tF: send.from,
     sC: reqChanges,
@@ -86,7 +87,7 @@ export function acceptTransfer(
   doc: _this,
   uniqueID: string,
   uid: string,
-  stockDoc: obj = {}
+  stockObj: obj = {}
 ) {
   const transferData: transferReq = JSON.parse(
     doc.transferNotifications[uniqueID]
@@ -99,16 +100,30 @@ export function acceptTransfer(
       iId: changes.iId,
       n: (doc.currentStocks[changes.iId] ?? 0) + changes.send,
     });
-    stockDoc[`currentStocks.${changes.iId}`] = fsValue.increment(changes.send);
+    stockObj[`currentStocks.${changes.iId}`] = fsValue.increment(changes.send);
   }
-  stockDoc.entry = fsValue.arrayUnion(
-    JSON.stringify({
-      sC: stockChanges,
-      tF: transferData.tF,
-      uid,
-      sUid: transferData.sUid,
-    })
-  );
-  stockDoc[`transferNotifications.${uniqueID}`] = fsValue.delete();
-  return stockDoc;
+  stockObj[`entry.${doc.entryNum + 1}`] = JSON.stringify({
+    sC: stockChanges,
+    tF: transferData.tF,
+    uid,
+    sUid: transferData.sUid,
+  });
+  stockObj.entryNum = fsValue.increment(1);
+  stockObj[`transferNotifications.${uniqueID}`] = fsValue.delete();
+  return stockObj;
+}
+export function cancleEntry(
+  doc: _this,
+  entryNum: string | number,
+  stockObj: obj = {}
+): [entry | undefined, obj] {
+  const entry: entry = JSON.parse(doc.entry[entryNum] ?? "null");
+  if (!entry || (entry.sUid ?? entry.tF ?? entry.tT ?? null) === null) {
+    return [undefined, stockObj];
+  }
+  for (const changes of entry.sC) {
+    stockObj[`currentStocks.${changes.iId}`] = fsValue.increment(-changes.i);
+  }
+  stockObj[`entry.${entryNum}`] = fsValue.delete();
+  return [entry, stockObj];
 }
