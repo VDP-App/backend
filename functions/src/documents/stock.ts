@@ -12,7 +12,7 @@ export function InitStock(): _this {
 }
 
 export function ResetStock() {
-  return { entry: [], entryNum: 0 };
+  return { entry: {}, entryNum: 0 };
 }
 
 export function RemoveItem(itemID: string) {

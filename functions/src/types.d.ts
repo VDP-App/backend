@@ -146,7 +146,7 @@ declare global {
         logs: string[];
       }
       interface config_products {
-        log: { count: number; page: number };
+        log: { count: number; page: number; max: number };
         ids: string[];
         items: { [id: string]: item };
       }

@@ -3,10 +3,8 @@ import { randomStr } from "../utility/utils";
 
 type _this = documents.raw.config_products;
 
-const MaxLogCount = 100;
-
 function updateLogCounter(doc: _this, productObj: obj): [boolean, number] {
-  if (doc.log.count > MaxLogCount) {
+  if (doc.log.count > doc.log.max) {
     productObj["log.page"] = fsValue.increment(1);
     productObj["log.count"] = 0;
     return [true, doc.log.page + 1];
