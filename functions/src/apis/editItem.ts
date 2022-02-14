@@ -30,7 +30,7 @@ const reqS = isInterfaceAs({
 export default async function EditItem(
   data: req.EditItem,
   context: req.context
-): Res<req.EditItem> {
+): Res<req.EditItem | null> {
   const cleanData = sanitizeJson(reqS, data);
   if (cleanData.err) return { err: true, val: IncorrectReqErr };
   data = cleanData.val;
@@ -46,7 +46,7 @@ export default async function EditItem(
     if (config.err) return config;
     const stockIDs = Object.keys(config.val?.stocks ?? {});
     const stockPaths = stockIDs.map((x) => paths.stock(x));
-    runTransactionComplete(
+    return await runTransactionComplete(
       [paths.products, ...stockPaths],
       ([doc, ...stockDocs]) => {
         const [isPageNew, page, productObj] = removeItem(doc, data.id);
@@ -79,7 +79,6 @@ export default async function EditItem(
         return commits;
       }
     );
-    return null as any;
   } else
     return await runTransaction(
       paths.products,
