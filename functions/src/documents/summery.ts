@@ -20,6 +20,7 @@ function parseCashCounterDocs(cashCounterDocs: documents.raw.cashCounter[]) {
     const returnDoc: documents.cashCounter = {
       bills: {},
       income: cashCounterDoc.income,
+      stockConsumed: cashCounterDoc.stockConsumed,
     };
     for (const billNum in cashCounterDoc.bills) {
       if (Object.prototype.hasOwnProperty.call(cashCounterDoc.bills, billNum)) {

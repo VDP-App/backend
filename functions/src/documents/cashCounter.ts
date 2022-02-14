@@ -4,6 +4,7 @@ type _this = documents.raw.cashCounter;
 
 export function InitCashCounter(): documents.raw.cashCounter {
   return {
+    stockConsumed: {},
     bills: {},
     income: { online: 0, offline: 0 },
   };
@@ -25,11 +26,24 @@ export function addBill(
     if (Math.abs(e.r - x) > 1100) e.r = x;
     totalMoney += e.a;
   }
-  for (const itemID in stockChanges) {
-    if (Object.prototype.hasOwnProperty.call(stockChanges, itemID)) {
-      stockObj[`currentStocks.${itemID}`] = fsValue.increment(
-        stockChanges[itemID]
-      );
+  if (bill.isWS) {
+    for (const itemID in stockChanges) {
+      if (Object.prototype.hasOwnProperty.call(stockChanges, itemID)) {
+        stockObj[`currentStocks.${itemID}`] = fsValue.increment(
+          stockChanges[itemID]
+        );
+      }
+    }
+  } else {
+    for (const itemID in stockChanges) {
+      if (Object.prototype.hasOwnProperty.call(stockChanges, itemID)) {
+        stockObj[`currentStocks.${itemID}`] = fsValue.increment(
+          stockChanges[itemID]
+        );
+        cashCounterObj[`stockConsumed.${itemID}`] = fsValue.increment(
+          -stockChanges[itemID]
+        );
+      }
     }
   }
   if (!bill.inC) {
@@ -56,13 +70,27 @@ export function cancleBill(
     stockChanges[e.iId] = e.q + (stockChanges[e.iId] ?? 0);
     totalMoney += e.a;
   }
-  for (const itemID in stockChanges) {
-    if (Object.prototype.hasOwnProperty.call(stockChanges, itemID)) {
-      stockObj[`currentStocks.${itemID}`] = fsValue.increment(
-        stockChanges[itemID]
-      );
+  if (bill.isWS) {
+    for (const itemID in stockChanges) {
+      if (Object.prototype.hasOwnProperty.call(stockChanges, itemID)) {
+        stockObj[`currentStocks.${itemID}`] = fsValue.increment(
+          stockChanges[itemID]
+        );
+      }
+    }
+  } else {
+    for (const itemID in stockChanges) {
+      if (Object.prototype.hasOwnProperty.call(stockChanges, itemID)) {
+        stockObj[`currentStocks.${itemID}`] = fsValue.increment(
+          stockChanges[itemID]
+        );
+        cashCounterObj[`stockConsumed.${itemID}`] = fsValue.increment(
+          -stockChanges[itemID]
+        );
+      }
     }
   }
+
   if (bill.inC) {
     cashCounterObj[`income.offline`] = fsValue.increment(-totalMoney);
   } else {
