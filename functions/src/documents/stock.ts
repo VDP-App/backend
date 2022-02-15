@@ -118,7 +118,7 @@ export function cancleEntry(
   stockObj: obj = {}
 ): [entry | undefined, obj] {
   const entry: entry = JSON.parse(doc.entry[entryNum] ?? "null");
-  if (!entry || (entry.sUid ?? entry.tF ?? entry.tT ?? null) === null) {
+  if (!entry || entry.sUid || entry.tF || entry.tT) {
     return [undefined, stockObj];
   }
   for (const changes of entry.sC) {
