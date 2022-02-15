@@ -4,6 +4,7 @@ import {
   isString,
   isNumber,
   sanitizeJson,
+  switchOn,
 } from "sanitize-json";
 import { cancleBill } from "../documents/cashCounter";
 import { cancleEntry } from "../documents/stock";
@@ -11,10 +12,21 @@ import { checkAuth, checkPermission } from "../middlewere";
 import { paths, runTransaction } from "../utility/firestore";
 import { IncorrectReqErr } from "../utility/res";
 
-const reqS = isInterfaceAs({
-  billNum: either(isNumber, isString),
+const billS = isInterfaceAs({
+  type: isString,
+  num: either(isNumber, isString),
   stockID: isString,
   cashCounterID: isString,
+});
+const stockChangesS = isInterfaceAs({
+  type: isString,
+  num: either(isNumber, isString),
+  stockID: isString,
+});
+
+const reqS = switchOn((x) => x.type, {
+  bill: billS,
+  stockChanges: stockChangesS,
 });
 
 export default async function CancleEntry(

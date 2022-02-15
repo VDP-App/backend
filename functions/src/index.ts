@@ -31,7 +31,7 @@ exports.stockChanges = functions.https.onCall(StockChanges);
 // send || accept
 exports.transferStock = functions.https.onCall(TransferStock);
 
-// cancle bills
+// cancle bill || stockChanges
 exports.cancleEntry = functions.https.onCall(CancleEntry);
 
 exports.cycle = functions.pubsub
