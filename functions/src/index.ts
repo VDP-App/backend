@@ -35,6 +35,6 @@ exports.transferStock = functions.https.onCall(TransferStock);
 exports.cancleEntry = functions.https.onCall(CancleEntry);
 
 exports.cycle = functions.pubsub
-  .schedule("0 2 * * *")
+  .schedule("5 0 * * *")
   .timeZone("Asia/Kolkata")
   .onRun(DailyCycle);

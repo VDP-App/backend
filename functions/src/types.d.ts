@@ -59,6 +59,7 @@ declare global {
     mG: number; //? moneyGiven
     o: order[]; //? orders
     uid: string;
+    n?: string; //? note
   }
   interface transferReq {
     sC: stockChanges.inSendTransfer[]; //? stockChanges
@@ -83,6 +84,7 @@ declare global {
     }
   }
   interface entry {
+    n?: string; //? note
     sC: stockChanges.inDoc[]; //? stockChanges
     tF?: string; //? transferFrom
     tT?: string; //? transferTo
@@ -228,6 +230,7 @@ declare global {
         }
       | { type: "stockChanges"; num: number | string; stockID: string };
     interface StockChanges {
+      note?: string;
       stockID: string;
       changes: stockChanges.inReq[];
     }

@@ -4,6 +4,7 @@ import {
   is,
   isListOf,
   sanitizeJson,
+  isFalsyOr,
 } from "sanitize-json";
 import { addEntry } from "../documents/stock";
 import { checkAuth, checkPermission } from "../middlewere";
@@ -18,6 +19,7 @@ const itemChangesS = isInterfaceAs({
   type: is((x) => x === "set" || x === "increment"),
 });
 const reqS = isInterfaceAs({
+  note: isFalsyOr(isString),
   stockID: isString,
   changes: isListOf(itemChangesS),
 });
@@ -38,10 +40,16 @@ export default async function StockChanges(
   });
   if (permissionErr.err) return permissionErr;
 
+  if (!data.note) delete data.note;
   return await runTransaction<documents.raw.stock, number>(
     paths.stock(data.stockID),
     function (doc) {
-      const updateDoc: obj = addEntry(doc, user.val.uid, data.changes);
+      const updateDoc: obj = addEntry(
+        doc,
+        user.val.uid,
+        data.changes,
+        data.note
+      );
       return { returnVal: doc.entryNum + 1, updateDoc: updateDoc };
     }
   );

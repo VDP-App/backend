@@ -7,6 +7,7 @@ import {
   sanitizeJson,
   isNumber,
   isInteger,
+  isFalsyOr,
 } from "sanitize-json";
 import { addBill } from "../documents/cashCounter";
 import { checkAuth, checkPermission } from "../middlewere";
@@ -22,6 +23,7 @@ const orderS = isInterfaceAs({
   r: isValidNumS,
 });
 const billS = isInterfaceAs({
+  n: isFalsyOr(isString),
   isWS: isBoolean,
   inC: isBoolean,
   mG: isValidNumS,
@@ -61,6 +63,7 @@ export default async function Billing(
   if (res1.err) return res1;
   if (!res1.val) return { err: true, val: InternalErr };
 
+  if (!data.bill.n) delete data.bill.n;
   const [billObj, stockObj] = addBill(data.bill, res1.val);
 
   const res2 = await runBatch(

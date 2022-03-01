@@ -23,6 +23,7 @@ export function addEntry(
   doc: _this,
   uid: string,
   reqChanges: stockChanges.inReq[],
+  note: string | undefined,
   stockObj: obj = {}
 ) {
   const sC: stockChanges.inDoc[] = [];
@@ -46,7 +47,7 @@ export function addEntry(
       stockObj[`currentStocks.${changes.iId}`] = fsValue.increment(changes.val);
     }
   }
-  stockObj[`entry.${doc.entryNum + 1}`] = JSON.stringify({ sC, uid });
+  stockObj[`entry.${doc.entryNum + 1}`] = JSON.stringify({ sC, uid, n: note });
   stockObj.entryNum = fsValue.increment(1);
   return stockObj;
 }

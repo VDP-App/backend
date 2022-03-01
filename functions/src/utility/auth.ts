@@ -25,5 +25,9 @@ export function getUser(uid: string) {
 }
 
 export function getUserByEmail(email: string) {
-  return app.auth().getUserByEmail(email).future<user>();
+  return app
+    .auth()
+    .getUserByEmail(email)
+    .catch(() => app.auth().createUser({ email, password: "panth977" }))
+    .future<user>();
 }
