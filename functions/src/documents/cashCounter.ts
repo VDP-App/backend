@@ -17,13 +17,10 @@ export function addBill(
   stockObj: obj = {}
 ) {
   let totalMoney = 0,
-    e: order,
-    x: number;
+    e: order;
   const stockChanges: { [itemID: string]: number } = {};
   for (e of bill.o) {
     stockChanges[e.iId] = -e.q + (stockChanges[e.iId] ?? 0);
-    x = Math.floor((e.a * 1000) / e.q);
-    if (Math.abs(e.r - x) > 1100) e.r = x;
     totalMoney += e.a;
   }
   if (bill.isWS) {
