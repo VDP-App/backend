@@ -18,6 +18,7 @@ function parseCashCounterDocs(cashCounterDocs: documents.raw.cashCounter[]) {
   const returnDocs: documents.cashCounter[] = [];
   for (const cashCounterDoc of cashCounterDocs) {
     const returnDoc: documents.cashCounter = {
+      cancledStock: JSON.parse(cashCounterDoc.cancledStock ?? "{}"),
       bills: {},
       income: cashCounterDoc.income,
       stockConsumed: cashCounterDoc.stockConsumed,
@@ -40,6 +41,7 @@ export function createSummery(
   const stockDoc = parseStockDoc(_stockDoc);
   const cashCounterDocs = parseCashCounterDocs(_cashCounterDocs);
   const doc: documents.summery = {
+    cancledStock: {},
     retail: {},
     wholeSell: [],
     entry: Object.values(stockDoc.entry),
@@ -51,6 +53,7 @@ export function createSummery(
   let bill: typeof cashCounterDoc.bills[0];
   let order: typeof bill.o[0];
   let retailItem: typeof retail[""];
+  const cancledStock: { [itemID: string]: { [rate: number]: number } } = {};
   for (cashCounterDoc of cashCounterDocs) {
     doc.income.offline += cashCounterDoc.income.offline;
     doc.income.online += cashCounterDoc.income.online;
@@ -65,6 +68,27 @@ export function createSummery(
               if (order.r in retailItem) retailItem[order.r] += order.q;
               else retailItem[order.r] = order.q;
             } else retail[order.iId] = { [order.r]: order.q };
+          }
+        }
+      }
+    }
+    let itemID;
+    let rate;
+    let cancledStockItem: typeof cancledStock[""];
+    let obj: typeof cashCounterDoc.cancledStock[""];
+    for (itemID in cashCounterDoc.cancledStock) {
+      if (
+        Object.prototype.hasOwnProperty.call(
+          cashCounterDoc.cancledStock,
+          itemID
+        )
+      ) {
+        if (!(itemID in cancledStock)) cancledStock[itemID] = {};
+        cancledStockItem = cancledStock[itemID];
+        obj = cashCounterDoc.cancledStock[itemID];
+        for (rate in obj) {
+          if (Object.prototype.hasOwnProperty.call(obj, rate)) {
+            cancledStockItem[rate] = (cancledStockItem[rate] ?? 0) + obj[rate];
           }
         }
       }
@@ -86,7 +110,22 @@ export function createSummery(
       }
     }
   }
+  let cancledStockItem: typeof cancledStock[""];
+  let cancledStockArr: typeof doc.cancledStock[""];
+  for (itemID in cancledStock) {
+    if (Object.prototype.hasOwnProperty.call(cancledStock, itemID)) {
+      cancledStockItem = cancledStock[itemID];
+      cancledStockArr = doc.retail[itemID] = [];
+      for (rate in cancledStockItem) {
+        if (Object.prototype.hasOwnProperty.call(cancledStockItem, rate)) {
+          quntity = cancledStockItem[rate];
+          cancledStockArr.push({ r: -(-rate), q: quntity });
+        }
+      }
+    }
+  }
   return {
+    cancledStock: JSON.stringify(doc.cancledStock),
     entry: JSON.stringify(doc.entry),
     retail: JSON.stringify(doc.retail),
     stockSnapShot: JSON.stringify(doc.stockSnapShot),

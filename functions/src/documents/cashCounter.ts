@@ -7,6 +7,7 @@ export function InitCashCounter(): documents.raw.cashCounter {
     stockConsumed: {},
     bills: {},
     income: { online: 0, offline: 0 },
+    cancledStock: "{}",
   };
 }
 
@@ -63,10 +64,17 @@ export function cancleBill(
   let totalMoney = 0,
     e: order;
   const stockChanges: { [itemID: string]: number } = {};
+  const cancledStock: documents.cashCounter["cancledStock"] = JSON.parse(
+    doc.cancledStock ?? "{}"
+  );
   for (e of bill.o) {
+    if (!(e.iId in cancledStock)) cancledStock[e.iId] = {};
+    const x = cancledStock[e.iId];
+    x[e.r] = (x[e.r] ?? 0) + e.q;
     stockChanges[e.iId] = e.q + (stockChanges[e.iId] ?? 0);
     totalMoney += e.a;
   }
+  cashCounterObj["cancledStock"] = JSON.stringify(cancledStock);
   if (bill.isWS) {
     for (const itemID in stockChanges) {
       if (Object.prototype.hasOwnProperty.call(stockChanges, itemID)) {
