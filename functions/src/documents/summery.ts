@@ -115,7 +115,7 @@ export function createSummery(
   for (itemID in cancledStock) {
     if (Object.prototype.hasOwnProperty.call(cancledStock, itemID)) {
       cancledStockItem = cancledStock[itemID];
-      cancledStockArr = doc.retail[itemID] = [];
+      cancledStockArr = doc.cancledStock[itemID] = [];
       for (rate in cancledStockItem) {
         if (Object.prototype.hasOwnProperty.call(cancledStockItem, rate)) {
           quntity = cancledStockItem[rate];
