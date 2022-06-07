@@ -18,7 +18,7 @@ function parseCashCounterDocs(cashCounterDocs: documents.raw.cashCounter[]) {
   const returnDocs: documents.cashCounter[] = [];
   for (const cashCounterDoc of cashCounterDocs) {
     const returnDoc: documents.cashCounter = {
-      cancledStock: JSON.parse(cashCounterDoc.cancledStock ?? "{}"),
+      cancledBill: {},
       bills: {},
       income: cashCounterDoc.income,
       stockConsumed: cashCounterDoc.stockConsumed,
@@ -27,6 +27,17 @@ function parseCashCounterDocs(cashCounterDocs: documents.raw.cashCounter[]) {
       if (Object.prototype.hasOwnProperty.call(cashCounterDoc.bills, billNum)) {
         const bill = cashCounterDoc.bills[billNum];
         returnDoc.bills[billNum] = JSON.parse(bill);
+      }
+    }
+    for (const billNum in cashCounterDoc.cancledBill) {
+      if (
+        Object.prototype.hasOwnProperty.call(
+          cashCounterDoc.cancledBill,
+          billNum
+        )
+      ) {
+        const bill = cashCounterDoc.cancledBill[billNum];
+        returnDoc.cancledBill[billNum] = JSON.parse(bill);
       }
     }
     returnDocs.push(returnDoc);
@@ -54,6 +65,7 @@ export function createSummery(
   let order: typeof bill.o[0];
   let retailItem: typeof retail[""];
   const cancledStock: { [itemID: string]: { [rate: number]: number } } = {};
+  let cancleItem: typeof cancledStock[""];
   for (cashCounterDoc of cashCounterDocs) {
     doc.income.offline += cashCounterDoc.income.offline;
     doc.income.online += cashCounterDoc.income.online;
@@ -72,24 +84,20 @@ export function createSummery(
         }
       }
     }
-    let itemID;
-    let rate;
-    let cancledStockItem: typeof cancledStock[""];
-    let obj: typeof cashCounterDoc.cancledStock[""];
-    for (itemID in cashCounterDoc.cancledStock) {
+    for (const billNum in cashCounterDoc.cancledBill) {
       if (
         Object.prototype.hasOwnProperty.call(
-          cashCounterDoc.cancledStock,
-          itemID
+          cashCounterDoc.cancledBill,
+          billNum
         )
       ) {
-        if (!(itemID in cancledStock)) cancledStock[itemID] = {};
-        cancledStockItem = cancledStock[itemID];
-        obj = cashCounterDoc.cancledStock[itemID];
-        for (rate in obj) {
-          if (Object.prototype.hasOwnProperty.call(obj, rate)) {
-            cancledStockItem[rate] = (cancledStockItem[rate] ?? 0) + obj[rate];
-          }
+        const bill = cashCounterDoc.cancledBill[billNum];
+        for (order of bill.o) {
+          if (order.iId in cancledStock) {
+            cancleItem = cancledStock[order.iId];
+            if (order.r in cancleItem) cancleItem[order.r] += order.q;
+            else cancleItem[order.r] = order.q;
+          } else cancledStock[order.iId] = { [order.r]: order.q };
         }
       }
     }

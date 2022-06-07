@@ -128,9 +128,7 @@ declare global {
       // ! uniqueID == stockID_date_entryNum
     }
     interface cashCounter {
-      cancledStock: {
-        [itemID: string]: { [rate: number]: number };
-      };
+      cancledBill: { [billNum: string]: bill };
       stockConsumed: { [itemID: string]: number };
       bills: { [billNum: string]: bill };
       income: { online: number; offline: number };
@@ -183,7 +181,7 @@ declare global {
         // ! uniqueID == stockID_date_entryNum
       }
       interface cashCounter {
-        cancledStock: string;
+        cancledBill: { [billNum: string]: string };
         stockConsumed: { [itemID: string]: number };
         bills: { [billNum: string]: string };
         income: { online: number; offline: number };
